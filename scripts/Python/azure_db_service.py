@@ -43,4 +43,3 @@ def get_power_data_from_meter_values(partitionKey):
     rowKeyColumnName = "meterValueId"
     
     return query_azure_db(filterQuery, selectQuery, tableName, rowKeyColumnName)
-
