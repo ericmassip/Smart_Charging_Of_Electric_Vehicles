@@ -6,7 +6,7 @@ The first contains a general introduction to the work. The goals are defined and
 \subsection{Paper 1}
 \textbf{Quantifying flexibility in EV charging as DR potential: Analysis of two real-world data sets}
 
-(I have marked some sentences in this paper which could be useful for my abstract or introduction. Also, some of the plots are very descriptive and could be useful as well for the presentation slides.)
+(I have marked some sentences in this paper which could be useful for my abstract or introduction. Also, some of the plots are very descriptive and could be useful as well for the presentation slides. Furthermore, at the end of the paper there is a very cool explanation of what makes a session flexible.)
 
 In this paper, their goals are to (1) characterize the EV charging behaviour and collect those behaviours into three clusters (park to charge, charging near home and charging near work), (2) to fit statistical models for the characteristics of each cluster (soujourn times and flexibility), and (3) quantify the maximal aggregate load that could be attained by coordinating connected EV charging at a given time \emph{t}, until time $t+\Delta$.
 
@@ -21,6 +21,33 @@ Our problem is encompassed into a local charge near work environment, so I have 
 
 In order to compare our density distributions from EnergyVille data to this paper's distributions, keep in mind the following values. Sojourn times [min, max] values are [5.00, 18.52] and idle times values are [0, 15.54]. Fitted distributions are logistic so better to check the rest of parameters directly if simulation is needed.
 
+\subsection{Paper 2}
+\textbf{Quantitive analysis of electric vehicle flexibility: A data-driven approach}
+
+(I have marked some sentences in this paper which could be useful for my abstract or introduction. Also, some of the plots are very descriptive and could be useful as well for the presentation slides.)
+
+This paper is mainly an extension of the previous paper. Their goals in this case are to (1) characterize the EV charging behaviour and collect those behaviours into three clusters (park to charge, charging near home and charging near work) (same as previous paper), (2) investigate if the characteristics of the charging sessions of each cluster are sensitive to seasonal changes or weekends, and (3) quantify the flexibility exploitation in terms of duration and amount of deferrable energy, as well as finding out which aspects are more useful for various objectives (i.e. load flattening and load balancing against renewable energy sources).
+
+As mentioned before, our problem is encompassed into a local charge near work environment, so I have focused again on the results for this cluster in detail. Our environment doesn't include transactions on weekends so that information is not relevant to us. The rest of characteristics are detailed below: 
+
+\begin{itemize}
+  \item Arrival times are predictable because their interquartile ranges are smaller compared to other clusters. Arrival times (around 6-9am).
+  \item Sojourn times are typically less than 9 hours and average idle time is 5h 30min, hence, their charging usually happens throughout the day.
+  \item Regarding seasonal effects on transactions: arrival times are earlier by around 1 hour in summer and spring, sojourn times and idle times are not affected by seasonal changes.
+\end{itemize}
+
+Due to the fact that the arrivals in the charge near work cluster are usually in the morning, the offered flexibility is exploited to cover the afternoon valley but not the night valley, because there are almost no transactions happening overnight. We should then try to focus on encouraging the exploitation of the flexibility of the transactions with morning arrivals to defer the consumption towards the late-morning, early afternoon.
+
+Finally, just to mention that it is demonstrated that the flexibility utilization is clearly influenced not only by the BAU energy consumptions patterns and arrival times, but also by the renewable generation patterns.
+
+(Maybe worth to add the formula of load balancing.)
+
+\subsection{Paper 3}
+\textbf{Charging electric vehicles in the smart grid}
+
+(I have marked some sentences in this paper which could be useful for my abstract or introduction. Also, some of the plots are very descriptive and could be useful as well for the presentation slides.)
+
+The first aim of this paper is to provide a general overview about the EV technology, describing the charging process, the charging modes available and the possibilities of communication for the exchange of control information. After that, they provide two examples of case studies based on a residential distribution feeder: in the first one they use load flattening to avoid peaks, and in the second one they use load balancing against a renewable energy source generator (i.e. wind turbines). Finally, they present the available types of demand response algorithms (e.g. distributed, centralized, etc.).
 
 \section{Lorem Ipsum 6--7}
 \lipsum[6-7]
