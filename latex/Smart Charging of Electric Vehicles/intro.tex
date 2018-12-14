@@ -49,8 +49,30 @@ Finally, just to mention that it is demonstrated that the flexibility utilizatio
 
 The first aim of this paper is to provide a general overview about the EV technology, describing the charging process, the charging modes available and the possibilities of communication for the exchange of control information. After that, they provide two examples of case studies based on a residential distribution feeder: in the first one they use load flattening to avoid peaks, and in the second one they use load balancing against a renewable energy source generator (i.e. wind turbines). Finally, they present the available types of demand response algorithms (e.g. distributed, centralized, etc.).
 
-\section{Lorem Ipsum 6--7}
-\lipsum[6-7]
+\subsection{Paper 4}
+\textbf{Achieving Scalable Model-Free Demand Response in Charging an Electric Vehicle Fleet with Reinforcement Learning}
+
+In this paper, they present a new way of defining the EV charging process, by means of a Markov Decision Process. They propose a way to represent the state-action space and a batch Reinforcement Learning algorithm (i.e. fitted Q-iteration) to learn the optimal EV charging policy.
+
+They tackle the problem of load flattening in this case. They propose to represent states as tuples of two values, departure time and charging time. Actions are defined as a binary value which represents charging or not charging.
+
+The cost function for each state-action pair is the cost of all the connected EV fleet consumption plus the penalty for unfinished charging (i.e. cars which were not fully charged before departure time, departure time < charging time).
+
+The transition probabilities are unknown in this case and they are needed to solve the Bellman equation, so they use FQI to approximate the optimal Q-value-state-action-pair.
+
+\subsection{Paper 5}
+\textbf{Definition and evaluation of model-free coordination of electrical vehicle charging with reinforcement learning}
+
+This paper is an extension of the previous one. They formulate a Markov Decision Process to represent the states of the environment while taking into account the EV charging characteristics (i.e. sojourn, arrival and charging times). They propose a Reinforcement Learning based approach for flattening the load of an EV fleet charging.
+
+They ask 4 research questions:
+
+\begin{itemize}
+  \item (\textbf{Q1}) What are appropriate parameter settings of the input training data? When the data time span is set to 3 months, the difference in the improvement beyond 5K sample trajectories per each day of the training data is not significant anymore. 
+  \item (\textbf{Q2}) How does the RL policy perform compared to an optimal all-knowing oracle algorithm? The proposed approach normalized cost considering 10 and 50 charging stations is 39\% and 30.4\% better respectively, compared to the business-as-usual scenario. It is at the same time 13\% and 15.6\% worse than the normalized cost of the optimal solution, which has perfect knowledge of the future EV charging sessions (i.e. future arrivals, departure times, energy requirements, etc.).
+  \item (\textbf{Q3}) How does that performance vary over time (i.e. from one month to the next) using realistic data? The months with larger flexibility have larger cost reductions, even though the cost gap between the learned and optimal policy is still larger for those same months.
+  \item (\textbf{Q4}) Does a learned approach generalize to different group sizes? They trained an agent with experiences from 10 EV charging stations and used that same learned policy to control an increased number of charging stations by up to a factor x10. It was proven that from factor 2 onward the performance is approximately the same, so it generalizes well.
+\end{itemize}
 
 %%% Local Variables: 
 %%% mode: latex
