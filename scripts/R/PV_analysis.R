@@ -2,48 +2,22 @@ install.packages("plyr")
 library(plyr)
 
 # Get transactions table
-PV_analysis <- read.table(file=file.choose(), header=TRUE, sep=",")
+PV_data <- read.table(file=file.choose(), header=TRUE, sep=",")
 
+PV_data_bp <- PV_data
 
-# Keep only interesting rows
-transactions_cleaned.sub <- data.frame(transactions.df$RowKey, transactions.df$chargingStationId, transactions.df$connectorId, transactions.df$idTag, transactions.df$startTime, transactions.df$stopTime, transactions.df$curPower, transactions.df$maxPowerSeen, transactions.df$chg3phase)
+# Summary of the PV data
+summary(PV_data_bp)
 
+str(PV_data_bp)
+PV_data_bp$date <- as.character(PV_data_bp$date)
 
-# Summary of the HistoricalTransactions table
-#summary(transactions_cleaned.sub)
+PV_data_bp$date
 
+#?strptime
+PV_data_bp$date <- as.POSIXct(PV_data_bp$date, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
-# Filter table for only production rows
-#transactions_production.sub <- transactions_cleaned.sub[grep("production", transactions_cleaned.sub$transactions.df.deployment),]
-
-
-# Filter table for transactions that have stopTime
-#transactions_production_time.sub <- transactions_production.sub[-which(transactions_production.sub$transactions.df.stopTime == ""), ]
-
-
-# Filter table for transactions that have chg3phase (if they don't, normally it means the connection stopped too soon or there was a problem of some kind)
-#transactions_production_time_chg3phase.sub <- transactions_production_time.sub[-which(transactions_production_time.sub$transactions.df.chg3phase == ""), ]
-
-
-summary(transactions_cleaned.sub)
-
-
-# Create subset of production transactions keeping only startTime and stopTime columns
-user_timings.sub <- data.frame(transactions_cleaned.sub$transactions.df.startTime, transactions_cleaned.sub$transactions.df.stopTime)
-
-str(user_timings.sub)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-
-user_timings.sub$transactions_cleaned.sub.transactions.df.startTime <- as.character(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime <- as.character(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-
-?strptime
-user_timings.sub$transactions_cleaned.sub.transactions.df.startTime <- as.POSIXct(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime <- as.POSIXct(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-
+PV_data_bp$date
 
 # Plot density function based on time of the day
 
