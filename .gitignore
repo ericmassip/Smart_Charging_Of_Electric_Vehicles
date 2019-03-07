@@ -105,3 +105,4 @@ venv.bak/
 
 .DS_Store
 azure_db_credentials.py
+.idea/
