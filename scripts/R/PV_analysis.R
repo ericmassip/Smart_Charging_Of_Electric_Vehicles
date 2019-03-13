@@ -2,48 +2,23 @@ install.packages("plyr")
 library(plyr)
 
 # Get transactions table
-PV_analysis <- read.table(file=file.choose(), header=TRUE, sep=",")
+PV_data <- read.table(file=file.choose(), header=TRUE, sep=",")
 
+PV_data_bp <- PV_data
 
-# Keep only interesting rows
-transactions_cleaned.sub <- data.frame(transactions.df$RowKey, transactions.df$chargingStationId, transactions.df$connectorId, transactions.df$idTag, transactions.df$startTime, transactions.df$stopTime, transactions.df$curPower, transactions.df$maxPowerSeen, transactions.df$chg3phase)
+# Summary of the PV data
+summary(PV_data_bp)
 
+#str(PV_data_bp)
+PV_data_bp$date <- as.character(PV_data_bp$date)
+PV_data_bp$power_sum <- as.numeric(PV_data_bp$power_sum)
 
-# Summary of the HistoricalTransactions table
-#summary(transactions_cleaned.sub)
+#PV_data_bp$date
 
+#?strptime
+PV_data_bp$date <- as.POSIXlt(PV_data_bp$date, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
-# Filter table for only production rows
-#transactions_production.sub <- transactions_cleaned.sub[grep("production", transactions_cleaned.sub$transactions.df.deployment),]
-
-
-# Filter table for transactions that have stopTime
-#transactions_production_time.sub <- transactions_production.sub[-which(transactions_production.sub$transactions.df.stopTime == ""), ]
-
-
-# Filter table for transactions that have chg3phase (if they don't, normally it means the connection stopped too soon or there was a problem of some kind)
-#transactions_production_time_chg3phase.sub <- transactions_production_time.sub[-which(transactions_production_time.sub$transactions.df.chg3phase == ""), ]
-
-
-summary(transactions_cleaned.sub)
-
-
-# Create subset of production transactions keeping only startTime and stopTime columns
-user_timings.sub <- data.frame(transactions_cleaned.sub$transactions.df.startTime, transactions_cleaned.sub$transactions.df.stopTime)
-
-str(user_timings.sub)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-
-user_timings.sub$transactions_cleaned.sub.transactions.df.startTime <- as.character(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime)
-user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime <- as.character(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-class(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime)
-
-?strptime
-user_timings.sub$transactions_cleaned.sub.transactions.df.startTime <- as.POSIXct(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime, format = "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime <- as.POSIXct(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-
+#PV_data_bp$date$mon + 1
 
 # Plot density function based on time of the day
 
@@ -57,54 +32,56 @@ library(lubridate)
 library(scales)
 library(hms)
 
+PV_data_bp$month <- ifelse(PV_data_bp$date$mon + 1 == 1, "Jan", 
+                           ifelse(PV_data_bp$date$mon + 1 == 2, "Feb",
+                                  ifelse(PV_data_bp$date$mon + 1 == 3, "Mar",
+                                         ifelse(PV_data_bp$date$mon + 1 == 4, "Apr",
+                                                ifelse(PV_data_bp$date$mon + 1 == 5, "May",
+                                                       ifelse(PV_data_bp$date$mon + 1 == 6, "Jun",
+                                                              ifelse(PV_data_bp$date$mon + 1 == 7, "Jul",
+                                                                     ifelse(PV_data_bp$date$mon + 1 == 8, "Aug",
+                                                                            ifelse(PV_data_bp$date$mon + 1 == 9, "Sep",
+                                                                                   ifelse(PV_data_bp$date$mon + 1 == 10, "Oct",
+                                                                                          ifelse(PV_data_bp$date$mon + 1 == 11, "Nov",
+                                                                                                 ifelse(PV_data_bp$date$mon + 1 == 12, "Dec", "Don't know what month I live in"))))))))))))
 
-user_timings.sub$startTime_hms <- hms::hms(second(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime), minute(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime), hour(user_timings.sub$transactions_cleaned.sub.transactions.df.startTime))
-user_timings.sub$startTime_hms <- as.POSIXct(user_timings.sub$startTime_hms)
+PV_data_bp_year <- PV_data_bp[which(PV_data_bp$power_sum > 0), ]
+PV_data_bp_year$date_hms <- hms::hms(second(PV_data_bp_year$date), minute(PV_data_bp_year$date), hour(PV_data_bp_year$date))
+PV_data_bp_year$date_hms <- as.POSIXct(PV_data_bp_year$date_hms)
 
-# startTime density function not scaled
-ggplot(user_timings.sub, aes(startTime_hms)) + 
-  geom_density(fill = "red", alpha = 0.5) + #also play with adjust such as adjust = 0.5
-  scale_x_datetime(breaks = date_breaks("2 hours"), labels=date_format("%H:%M"))
+PV_data_bp_summer <- PV_data_bp[which(PV_data_bp$power_sum > 0 & (PV_data_bp$month == "Jun" | PV_data_bp$month == "Jul" | PV_data_bp$month == "Aug")), ]
+PV_data_bp_summer$date_hms <- hms::hms(second(PV_data_bp_summer$date), minute(PV_data_bp_summer$date), hour(PV_data_bp_summer$date))
+PV_data_bp_summer$date_hms <- as.POSIXct(PV_data_bp_summer$date_hms)
 
-# startTime density function scaled
-ggplot(user_timings.sub) + 
-  geom_density( aes(x = startTime_hms, y = ..scaled..), fill = "red", alpha = 0.5) +
-  labs(title = "Arrival time density function") +
-  scale_x_datetime(breaks = date_breaks("2 hours"), labels=date_format("%H:%M"))
+PV_data_bp_autumn <- PV_data_bp[which(PV_data_bp$power_sum > 0 & (PV_data_bp$month == "Sep" | PV_data_bp$month == "Oct" | PV_data_bp$month == "Nov")), ]
+PV_data_bp_autumn$date_hms <- hms::hms(second(PV_data_bp_autumn$date), minute(PV_data_bp_autumn$date), hour(PV_data_bp_autumn$date))
+PV_data_bp_autumn$date_hms <- as.POSIXct(PV_data_bp_autumn$date_hms)
 
-summary(user_timings.sub$startTime_hms)
-quantile(user_timings.sub$startTime_hms)
-var(user_timings.sub$startTime_hms)
-sd(user_timings.sub$startTime_hms)
+PV_data_bp_winter <- PV_data_bp[which(PV_data_bp$power_sum > 0 & (PV_data_bp$month == "Dec" | PV_data_bp$month == "Jan" | PV_data_bp$month == "Feb")), ]
+PV_data_bp_winter$date_hms <- hms::hms(second(PV_data_bp_winter$date), minute(PV_data_bp_winter$date), hour(PV_data_bp_winter$date))
+PV_data_bp_winter$date_hms <- as.POSIXct(PV_data_bp_winter$date_hms)
 
+PV_data_bp_spring <- PV_data_bp[which(PV_data_bp$power_sum > 0 & (PV_data_bp$month == "Mar" | PV_data_bp$month == "Apr" | PV_data_bp$month == "May")), ]
+PV_data_bp_spring$date_hms <- hms::hms(second(PV_data_bp_spring$date), minute(PV_data_bp_spring$date), hour(PV_data_bp_spring$date))
+PV_data_bp_spring$date_hms <- as.POSIXct(PV_data_bp_spring$date_hms)
 
-user_timings.sub$stopTime_hms <- hms::hms(second(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime), minute(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime), hour(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime))
-user_timings.sub$stopTime_hms <- as.POSIXct(user_timings.sub$stopTime_hms)
+PV_data_bp_Jan <- PV_data_bp[which(PV_data_bp$month == "Jan" & PV_data_bp$power_sum > 0), ]
+PV_data_bp_Jan$date_hms <- hms::hms(second(PV_data_bp_Jan$date), minute(PV_data_bp_Jan$date), hour(PV_data_bp_Jan$date))
+PV_data_bp_Jan$date_hms <- as.POSIXct(PV_data_bp_Jan$date_hms)
 
-ggplot(user_timings.sub, aes(stopTime_hms)) + 
-  geom_density(fill = "red", alpha = 0.5) + #also play with adjust such as adjust = 0.5
-  scale_x_datetime(breaks = date_breaks("2 hours"), labels=date_format("%H:%M"))
+# PV_data density function not scaled
+ggplot(aes(x = date_hms, y = power_sum), data = PV_data_bp_spring) +
+  geom_point(aes(colour = factor(month))) +
+  scale_x_datetime(breaks = date_breaks("1 hour"), labels=date_format("%H:%M")) +
+  scale_y_continuous(breaks = c(0, 50000, 100000, 150000, 200000, 250000, 300000), limits = c(0,300000)) +
+  labs(title = "PV data Spring 2017") +
+  ylab("Power(W)")
 
-ggplot(user_timings.sub) + 
-  geom_density( aes(x = stopTime_hms, y = ..scaled..), fill = "red", alpha = 0.5) +
-  labs(title = "Departure time density function") +
-  scale_x_datetime(breaks = date_breaks("2 hours"), labels=date_format("%H:%M"))
-
-summary(user_timings.sub$stopTime_hms)
-quantile(user_timings.sub$stopTime_hms)
-var(user_timings.sub$stopTime_hms)
-sd(user_timings.sub$stopTime_hms)
-
-
-# Plot density function of time difference between arrival and departure times
-user_timings.sub$timediff <- with(user_timings.sub, difftime(user_timings.sub$transactions_cleaned.sub.transactions.df.stopTime, user_timings.sub$transactions_cleaned.sub.transactions.df.startTime, units="hours"))
-
-ggplot(user_timings.sub) + 
-  geom_density( aes(x = timediff, y = ..scaled..), fill = "red", alpha = 0.5) +
-  labs(title = "Time difference between arrival and departure time") +
-  scale_x_continuous(breaks = c(1:15), labels = c(1:15), limits = c(NA,15), trans = "identity")
-
-summary(user_timings.sub$timediff)
-quantile(user_timings.sub$timediff)
-var(user_timings.sub$timediff)
-sd(user_timings.sub$timediff)
+#geom_bin2d
+#geom_count (similar to point but it's counting, not very useful I think)
+#geom_density2d or geom_density_2d (weird)
+#geom_jitter (same as point)
+#geom_line (it has a weird line in the middle)
+#geom_point
+#geom_polygon
+#geom_step
