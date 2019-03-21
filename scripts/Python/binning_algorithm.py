@@ -76,14 +76,14 @@ def get_resulting_Xs_matrix(timeslot, Xs, action):
     return Xs_tmp / Nmax
 
 
-def save_state_action_tuple(timeslot, Xs, previous_action, trajectory):
+def save_state_action_tuple(timeslot, Xs, previous_action):
     next_timeslot = timeslot + 1
 
     resulting_Xs = get_resulting_Xs_matrix(next_timeslot, Xs, previous_action)
     # Compute cost function
     cost = 1000
     # Append tuple
-    trajectory.append(
+    state_action_tuples.append(
         {'timeslot': timeslot, 'Xs': tuple(Xs.flatten()), 'us': previous_action, 'next_timeslot': next_timeslot,
          'resulting_Xs': tuple(resulting_Xs.flatten()), 'cost': cost})
 
@@ -93,9 +93,7 @@ def save_state_action_tuple(timeslot, Xs, previous_action, trajectory):
         Us = session_helper.get_possible_actions(resulting_Xs)
 
         for next_action in Us:
-            save_state_action_tuple(next_timeslot, resulting_Xs, next_action, trajectory)
-    else:
-        state_action_tuples.append(trajectory)
+            save_state_action_tuple(next_timeslot, resulting_Xs, next_action)
 
 
 timeslot = 1
@@ -114,8 +112,7 @@ Us = session_helper.get_possible_actions(Xs)
 
 # Iterate over the possible actions in Us
 for action in Us:
-    trajectory = []
-    save_state_action_tuple(timeslot, Xs, action, trajectory)
+    save_state_action_tuple(timeslot, Xs, action)
 
 json = json.dumps({'trajectories': state_action_tuples})
 f = open("dict.json", "w")
