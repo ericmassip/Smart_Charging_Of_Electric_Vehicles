@@ -30,18 +30,6 @@ def shift_left(x):
     return y
 
 
-def add_cars_starting_at_this_timeslot(timeslot, Xs):
-    Xs_tmp = Xs * Nmax
-    for transaction in day_transactions:
-        if transaction['timeslot'] == timeslot:
-            time_to_depart = transaction['time_to_depart'] / deltaTslot
-            time_to_full_charge = transaction['time_to_full_charge'] / deltaTslot
-            i = int(time_to_depart)
-            j = int(time_to_full_charge)
-            Xs_tmp[j, i] += 1
-    return Xs_tmp / Nmax
-
-
 def get_resulting_Xs_matrix(timeslot, Xs, action):
     Xs_tmp = Xs * Nmax
 
@@ -88,7 +76,7 @@ def save_state_action_tuple(timeslot, Xs, previous_action):
          'resulting_Xs': tuple(resulting_Xs.flatten()), 'cost': cost})
 
     if timeslot < Smax:
-        resulting_Xs = add_cars_starting_at_this_timeslot(next_timeslot, resulting_Xs)
+        resulting_Xs = session_helper.add_cars_starting_at_this_timeslot(next_timeslot, resulting_Xs, day_transactions)
 
         Us = session_helper.get_possible_actions(resulting_Xs)
 
@@ -105,7 +93,7 @@ Xs = np.zeros((Smax, Smax))
 state_action_tuples = []
 
 # Add cars starting at timeslot 1
-Xs = add_cars_starting_at_this_timeslot(timeslot, Xs)
+Xs = session_helper.add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions)
 
 # Get the possible actions for this first state at timeslot 1
 Us = session_helper.get_possible_actions(Xs)

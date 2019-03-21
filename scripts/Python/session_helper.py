@@ -40,12 +40,16 @@ def get_session_start_timeslot(start_time):
 
     return session_start_timeslot
 
-
-def add_transactions_starting_in_this_tslot(timeslot, day_transactions, F):
+def add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions):
+    Xs_tmp = Xs * Nmax
     for transaction in day_transactions:
         if transaction['timeslot'] == timeslot:
-            F.append(transaction)
-    return F
+            time_to_depart = transaction['time_to_depart'] / deltaTslot
+            time_to_full_charge = transaction['time_to_full_charge'] / deltaTslot
+            i = int(time_to_depart)
+            j = int(time_to_full_charge)
+            Xs_tmp[j, i] += 1
+    return Xs_tmp / Nmax
 
 
 # At the end of every iteration, the sessions with ConnectedTime == 0 must be erased because they are not connected
