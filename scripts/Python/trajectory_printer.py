@@ -1,5 +1,6 @@
 import json
 import numpy as np
+import session_helper
 
 
 def matprint(mat, fmt="g"):
@@ -69,7 +70,7 @@ def get_organized_trajectories(state_action_tuples):
             current_trajectory.remove_state_actions(difference)
             current_trajectory.add_state_action(state_action_tuple)
 
-        if state_action_tuple.timeslot == 3:
+        if state_action_tuple.timeslot == session_helper.Smax: # This 3 should be Smax
             trajectories.append(current_trajectory.trajectory)
 
     return trajectories
