@@ -24,12 +24,6 @@ Nmax = session_helper.Nmax
 day_transactions = session_helper.get_dict_of_day_transactions(sessions_of_the_day)
 
 
-def shift_left(x):
-    y = np.roll(x, -1)
-    y[:, Smax - 1] = 0
-    return y
-
-
 def get_resulting_Xs_matrix(timeslot, Xs, action):
     Xs_tmp = Xs * Nmax
 
@@ -59,7 +53,7 @@ def get_resulting_Xs_matrix(timeslot, Xs, action):
 
     # Shift all elements of the Xs matrix left, because the timeslot is over
     if timeslot > 1:
-        Xs_tmp = shift_left(Xs_tmp)
+        Xs_tmp = session_helper.shift_left(Xs_tmp)
 
     return Xs_tmp / Nmax
 
@@ -69,7 +63,7 @@ def save_state_action_tuple(timeslot, Xs, previous_action):
 
     resulting_Xs = get_resulting_Xs_matrix(next_timeslot, Xs, previous_action)
     # Compute cost function
-    cost = 1000
+    cost = session_helper.get_cost(resulting_Xs, previous_action, 10000)
     # Append tuple
     state_action_tuples.append(
         {'timeslot': timeslot, 'Xs': tuple(Xs.flatten()), 'us': previous_action, 'next_timeslot': next_timeslot,

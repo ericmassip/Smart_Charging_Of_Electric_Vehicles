@@ -10,6 +10,8 @@ Smax = int(Hmax/deltaTslot)
 Nmax = 3
 
 
+# This method returns a dictionary formed by the sessions' timeslot, time to departure and time to full charge.
+# The sessions sent as a parameter should belong to the day being computed
 def get_dict_of_day_transactions(sessions):
     day_transactions_dict = []
     for session in sessions:
@@ -26,6 +28,7 @@ def get_dict_of_day_transactions(sessions):
     return day_transactions_dict
 
 
+# Given the starting time of the session, this method returns the timeslot in which the session is starting
 def get_session_start_timeslot(start_time):
     hour_of_next_timeslot = start_hour + deltaTslot
     session_start_timeslot = 1
@@ -40,6 +43,8 @@ def get_session_start_timeslot(start_time):
 
     return session_start_timeslot
 
+
+# Return a normalized matrix adding the cars starting their charging at this timeslot
 def add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions):
     Xs_tmp = Xs * Nmax
     for transaction in day_transactions:
@@ -52,15 +57,8 @@ def add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions):
     return Xs_tmp / Nmax
 
 
-# At the end of every iteration, the sessions with ConnectedTime == 0 must be erased because they are not connected
-# anymore
-def get_pruned_sessions(F):
-    for session in F:
-        if session['time_to_depart'] == 0:
-            F.remove(session)
-    return F
-
-
+# Returns an array of length Smax where every element is the ratio of cars to be charged, a value between 0 and 1:
+# 0 means charge nothing, 1 means charge all of them.
 def get_possible_actions_in_diagonal(Xs_total_d):
     number_of_cars_in_the_diagonal = int(np.ceil(Xs_total_d))
 
@@ -70,15 +68,63 @@ def get_possible_actions_in_diagonal(Xs_total_d):
         return [number_of_cars_to_be_charged/number_of_cars_in_the_diagonal for number_of_cars_to_be_charged in range(0, number_of_cars_in_the_diagonal + 1)]
 
 
-def get_diagonals(Xs):
+# Returns an array of length Smax where each element is the amount of cars in the diagonal. Each element corresponds
+# to one of the top diagonals. It starts at diagonal 0, until Smax-1
+def get_above_diagonals(Xs):
     return [np.sum(np.diagonal(Xs, d)) for d in range(0, Smax)]
 
 
+# Returns an array of length Smax where each element is the amount of cars in the diagonal. Each element corresponds
+# to one of the low diagonals. It starts at diagonal -1, until Smax-1
+def get_lower_diagonals(Xs):
+    return [np.sum(np.diagonal(Xs, (-1)*d)) for d in range(1, Smax)]
+
+
+# Return a list with all the possible actions for the given state matrix Xs
 def get_possible_actions(Xs):
-    above_diagonals = get_diagonals(Xs)
+    above_diagonals = get_above_diagonals(Xs)
     possible_actions_for_every_diagonal = []
 
     for Xs_total_d in above_diagonals:
         possible_actions_for_every_diagonal.append(get_possible_actions_in_diagonal(Xs_total_d))
 
     return list(itertools.product(*possible_actions_for_every_diagonal))
+
+
+# Returns the cost of the given state-action
+def get_cost(Xs, action, pv_energy_generated):
+    cost_demand = get_cost_demand(Xs, action, pv_energy_generated)
+    cost_penalty = get_cost_penalty(Xs)
+    return cost_demand + cost_penalty
+
+
+# Returns the cost of taking the given action on state Xs, also taking into account the PV energy generated
+def get_cost_demand(Xs, action, pv_energy_generated):
+    cost_of_cars_action = 0
+    cars_in_above_diagonals = session_helper.get_above_diagonals(Xs)
+
+    d = 0
+    for cars_in_d in cars_in_above_diagonals:
+        cost_of_cars_action += cars_in_d * action[d]
+        d += 1
+
+    return (cost_of_cars_action - pv_energy_generated) ** 2
+
+
+# Returns the penalty cost of having cars in the lower diagonals, which means that those cars will not be fully charged
+def get_cost_penalty(Xs):
+    M = 2 * Nmax
+    cost_penalty = 0
+    cars_in_lower_diagonals = session_helper.get_lower_diagonals(Xs)
+
+    for cars_in_minus_d in cars_in_lower_diagonals:
+        cost_penalty += cars_in_minus_d
+
+    return M * cost_penalty
+
+
+# This method is used for shifting the matrix one position to the left after finishing the timeslot
+def shift_left(x):
+    y = np.roll(x, -1)
+    y[:, Smax - 1] = 0
+    return y
