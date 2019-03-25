@@ -2,6 +2,7 @@ import json
 import numpy as np
 import session_helper
 
+Smax = session_helper.Smax
 
 def matprint(mat, fmt="g"):
     mat = np.around(mat, decimals=2)
@@ -35,11 +36,16 @@ def show_state_action_tuple(state_action_tuple):
 class StateActionTuple():
     def __init__(self, state_action):
         self.timeslot = state_action['timeslot']
-        self.Xs = np.reshape(state_action['Xs'], (3, 3))
+        self.Xs = np.reshape(state_action['Xs'], (Smax, Smax))
         self.us = state_action['us']
-        self.resulting_Xs = np.reshape(state_action['resulting_Xs'], (3, 3))
+        self.resulting_Xs = np.reshape(state_action['resulting_Xs'], (Smax, Smax))
         self.cost = state_action['cost']
         self.next_timeslot = state_action['next_timeslot']
+
+    def is_equal(self, state_action_tuple):
+        return (self.timeslot == state_action_tuple.timeslot and
+                str(self.Xs) == str(state_action_tuple.Xs) and
+                self.us == state_action_tuple.us)
 
 
 class Trajectory:
@@ -70,24 +76,42 @@ def get_organized_trajectories(state_action_tuples):
             current_trajectory.remove_state_actions(difference)
             current_trajectory.add_state_action(state_action_tuple)
 
-        if state_action_tuple.timeslot == session_helper.Smax:
+        if state_action_tuple.timeslot == Smax:
             trajectories.append(current_trajectory.trajectory)
 
     return trajectories
+
+
+def show_organized_trajectories(organized_trajectories):
+    for trajectory in organized_trajectories:
+        print('')
+        print('')
+        print('')
+        print('NEW TRAJECTORY')
+        print('')
+        for state_action_tuple in trajectory:
+            show_state_action_tuple(state_action_tuple)
+
+
+def get_unique_state_action_tuples(state_action_tuples):
+    state_action_tuples_uniques = state_action_tuples
+    i = 0
+    for state_action_tuple in state_action_tuples:
+        for j in range(0, len(state_action_tuples)):
+            if i != j and state_action_tuple.is_equal(state_action_tuples[i]):
+                state_action_tuples_uniques.pop(i)
+        i += 1
+
+    return state_action_tuples_uniques
 
 
 json_to_be_beautified = json.loads(open('dict.json').read())
 state_actions = json_to_be_beautified['trajectories']
 state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
 
+unique_state_action_tuples = get_unique_state_action_tuples(state_action_tuples)
+print('Unique state action tuples: ' + str(len(unique_state_action_tuples)))
 
 organized_trajectories = get_organized_trajectories(state_action_tuples)
-
-for trajectory in organized_trajectories:
-    print('')
-    print('')
-    print('')
-    print('NEW TRAJECTORY')
-    print('')
-    for state_action_tuple in trajectory:
-        show_state_action_tuple(state_action_tuple)
+print('Number of trajectories: ' + str(len(organized_trajectories)))
+show_organized_trajectories(organized_trajectories)

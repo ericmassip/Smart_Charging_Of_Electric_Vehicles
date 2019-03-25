@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 
 start_hour = 6
-end_hour = 12
+end_hour = 22
 Hmax = end_hour - start_hour
 deltaTslot = 2
 Smax = int(Hmax/deltaTslot)
@@ -60,7 +60,7 @@ def add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions):
 # Returns an array of length Smax where every element is the ratio of cars to be charged, a value between 0 and 1:
 # 0 means charge nothing, 1 means charge all of them.
 def get_possible_actions_in_diagonal(Xs_total_d):
-    number_of_cars_in_the_diagonal = int(np.ceil(Xs_total_d))
+    number_of_cars_in_the_diagonal = int(Xs_total_d * Nmax)
 
     if number_of_cars_in_the_diagonal == 0:
         return [0]

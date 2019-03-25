@@ -6,8 +6,8 @@ import session_helper
 
 sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-03-06.csv')
 
-# sessions_of_the_day = [sessions.loc[14], sessions.loc[15], sessions.loc[16]]
-sessions_of_the_day = [sessions.loc[15], sessions.loc[16]]
+sessions_of_the_day = [sessions.loc[1], sessions.loc[2], sessions.loc[3]]
+#sessions_of_the_day = [sessions.loc[15], sessions.loc[16]]
 
 # The PV obtained from the sun in UTC in Genk in the longest day of the year starts at 6am and ends at 10pm.
 # This means that Hmax = 16h. I choose deltaTslot = 2. Then, Smax = 16/2 = 8. Every timeslot will be 2h long.
@@ -45,7 +45,8 @@ def get_resulting_Xs_matrix(timeslot, Xs, action):
                     if cars > 0 and action_for_d > 0:
                         for car in range(1, cars + 1):
                             if action_for_d > 0:
-                                Xs_tmp[row - 1, col] += 1  # Sum 1 to the element on top, because it has been charged
+                                if row != 0:
+                                    Xs_tmp[row - 1, col] += 1  # Sum 1 to the element on top, because it has been charged
                                 Xs_tmp[row, col] -= 1  # Subtract 1 to the current element
                                 action_for_d -= 1
 
@@ -73,6 +74,8 @@ def save_state_action_tuple(timeslot, Xs, previous_action):
         resulting_Xs = session_helper.add_cars_starting_at_this_timeslot(next_timeslot, resulting_Xs, day_transactions)
 
         Us = session_helper.get_possible_actions(resulting_Xs)
+
+        #print(Us)
 
         for next_action in Us:
             save_state_action_tuple(next_timeslot, resulting_Xs, next_action)
