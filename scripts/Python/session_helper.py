@@ -101,7 +101,7 @@ def get_cost(Xs, action, pv_energy_generated):
 # Returns the cost of taking the given action on state Xs, also taking into account the PV energy generated
 def get_cost_demand(Xs, action, pv_energy_generated):
     cost_of_cars_action = 0
-    cars_in_above_diagonals = session_helper.get_above_diagonals(Xs)
+    cars_in_above_diagonals = get_above_diagonals(Xs)
 
     d = 0
     for cars_in_d in cars_in_above_diagonals:
@@ -115,7 +115,7 @@ def get_cost_demand(Xs, action, pv_energy_generated):
 def get_cost_penalty(Xs):
     M = 2 * Nmax
     cost_penalty = 0
-    cars_in_lower_diagonals = session_helper.get_lower_diagonals(Xs)
+    cars_in_lower_diagonals = get_lower_diagonals(Xs)
 
     for cars_in_minus_d in cars_in_lower_diagonals:
         cost_penalty += cars_in_minus_d

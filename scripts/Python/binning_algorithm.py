@@ -63,7 +63,7 @@ def save_state_action_tuple(timeslot, Xs, previous_action):
 
     resulting_Xs = get_resulting_Xs_matrix(next_timeslot, Xs, previous_action)
     # Compute cost function
-    cost = session_helper.get_cost(resulting_Xs, previous_action, 10000)
+    cost = session_helper.get_cost(resulting_Xs, previous_action, 0)
     # Append tuple
     state_action_tuples.append(
         {'timeslot': timeslot, 'Xs': tuple(Xs.flatten()), 'us': previous_action, 'next_timeslot': next_timeslot,
