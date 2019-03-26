@@ -3,7 +3,7 @@ import numpy as np
 import itertools
 
 start_hour = 6
-end_hour = 22
+end_hour = 12
 Hmax = end_hour - start_hour
 deltaTslot = 2
 Smax = int(Hmax/deltaTslot)
@@ -128,3 +128,38 @@ def shift_left(x):
     y = np.roll(x, -1)
     y[:, Smax - 1] = 0
     return y
+
+
+def get_resulting_Xs_matrix(timeslot, Xs, action):
+    Xs_tmp = Xs * Nmax
+    Xs_tmp2 = Xs_tmp
+    for d in range(0, Smax):
+        cols = d
+        row = 0
+        cars_in_d = np.sum(np.diagonal(Xs_tmp, d))
+
+        # If there are cars in this diagonal, check
+        if cars_in_d > 0:
+            action_for_d = action[d] * cars_in_d
+
+            # Iterate over the elements of the diagonal d
+            for col in range(cols, Smax):
+                if action_for_d > 0:
+                    cars = int(Xs_tmp[row, col])
+
+                    # If there is at least one car on this element and cars to be charged in this d, proceed
+                    if cars > 0 and action_for_d > 0:
+                        for car in range(1, cars + 1):
+                            if action_for_d > 0:
+                                if row != 0:
+                                    Xs_tmp[row - 1, col] += 1  # Sum 1 to the element on top, because it has been charged
+                                Xs_tmp[row, col] -= 1  # Subtract 1 to the current element
+                                action_for_d -= 1
+
+                row += 1
+
+    # Shift all elements of the Xs matrix left, because the timeslot is over
+    if timeslot > 1:
+        Xs_tmp = shift_left(Xs_tmp)
+
+    return Xs_tmp / Nmax
