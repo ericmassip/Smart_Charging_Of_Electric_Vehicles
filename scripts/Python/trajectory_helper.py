@@ -95,15 +95,12 @@ def show_organized_trajectories(organized_trajectories):
 
 
 def get_unique_state_action_tuples(state_action_tuples):
-    state_action_tuples_uniques = state_action_tuples
-    i = 0
-    for state_action_tuple in state_action_tuples:
-        for j in range(0, len(state_action_tuples)):
-            if i != j and state_action_tuple.is_equal(state_action_tuples[i]):
-                state_action_tuples_uniques.pop(i)
-        i += 1
+    x = state_action_tuples.copy()
+    for i, a in enumerate(x):
+        if any(a.is_equal(b) for b in x[:i]):
+            x.remove(a)
 
-    return state_action_tuples_uniques
+    return x
 
 
 def get_accumulated_cost(trajectory):
@@ -111,9 +108,9 @@ def get_accumulated_cost(trajectory):
                             acc + state_action_tuple.cost, trajectory, 0)
 
 
-#json_to_be_beautified = json.loads(open('dict.json').read())
-#state_actions = json_to_be_beautified['trajectories']
-#state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
+json_to_be_beautified = json.loads(open('dict.json').read())
+state_actions = json_to_be_beautified['trajectories']
+state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
 
 #for state_action_tuple in state_action_tuples:
 #    show_state_action_tuple(state_action_tuple)

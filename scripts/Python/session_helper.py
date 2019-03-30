@@ -97,6 +97,7 @@ def get_possible_actions(Xs):
 
 
 # Returns the cost of the given state-action
+#TODO: Add the sum to the cost when cars are at the edge and they are not charged
 def get_cost(Xs, resulting_Xs, action, pv_energy_generated):
     cost_demand = get_cost_demand(Xs, action, pv_energy_generated)
     cost_penalty = get_cost_penalty(resulting_Xs)
