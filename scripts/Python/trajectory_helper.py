@@ -45,7 +45,7 @@ class StateActionTuple():
 
     def is_equal(self, state_action_tuple):
         return (self.timeslot == state_action_tuple.timeslot and
-                str(self.Xs) == str(state_action_tuple.Xs) and
+                np.array_equal(self.Xs, state_action_tuple.Xs) and
                 self.us == state_action_tuple.us)
 
 

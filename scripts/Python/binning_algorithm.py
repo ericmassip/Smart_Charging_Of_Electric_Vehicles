@@ -22,13 +22,13 @@ day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
 def save_state_action_tuple(timeslot, Xs, previous_action):
     next_timeslot = timeslot + 1
 
-    resulting_Xs = get_resulting_Xs_matrix(next_timeslot, Xs, previous_action)
+    resulting_Xs = get_resulting_Xs_matrix(Xs, previous_action)
     # Compute cost function
-    cost = get_cost(resulting_Xs, previous_action, 0)
+    cost = get_cost(Xs, resulting_Xs, previous_action, 0)
     # Append tuple
     state_action_tuples.append(
-        {'timeslot': timeslot, 'Xs': tuple(Xs.flatten()), 'us': previous_action, 'next_timeslot': next_timeslot,
-         'resulting_Xs': tuple(resulting_Xs.flatten()), 'cost': cost})
+        {'timeslot': timeslot, 'Xs': tuple(Xs.flatten() / Nmax), 'us': previous_action, 'next_timeslot': next_timeslot,
+         'resulting_Xs': tuple(resulting_Xs.flatten() / Nmax), 'cost': cost})
 
     if timeslot < Smax:
         resulting_Xs = add_cars_starting_at_this_timeslot(next_timeslot, resulting_Xs, day_transactions)
