@@ -77,12 +77,27 @@ def get_cars_in_upper_diagonals(Xs):
     return [np.sum(np.diagonal(Xs, d)) for d in range(0, Smax)]
 
 
+# Returns the amount of cars that are on the left edge, hence will disappear after the next timeslot, but they
+# haven't been charged so they should still apply for the cost penalty
+def get_cars_not_charged_at_the_left_edge(Xs, action):
+    cars_in_left_corner = Xs[0, 0]
+    cars_not_charged_at_the_left_edge = np.sum(Xs[1:, 0])
+
+    if cars_in_left_corner > 0:
+        cars_in_main_diagonal = np.sum(np.diagonal(Xs, 0))
+        cars_not_charged_left_corner = cars_in_left_corner - action[0] * cars_in_main_diagonal
+        cars_not_charged_at_the_left_edge = cars_not_charged_at_the_left_edge + cars_not_charged_left_corner
+
+    return cars_not_charged_at_the_left_edge
+
+
 # Returns an array of length Smax where each element is the amount of cars in the diagonal. Each element corresponds
 # to one of the low diagonals. It starts at diagonal -1, until Smax-1
-def get_cars_in_lower_diagonals(Xs):
-    cars_in_lower_diagonals = [np.sum(np.diagonal(Xs, (-1) * d)) for d in range(1, Smax)]
+def get_cars_in_lower_diagonals(Xs, resulting_Xs, action):
+    cars_not_charged_at_the_left_edge = get_cars_not_charged_at_the_left_edge(Xs, action)
+    cars_in_lower_diagonals = [np.sum(np.diagonal(resulting_Xs, (-1) * d)) for d in range(1, Smax)]
     return functools.reduce(lambda car1, car2:
-                            car1 + car2, cars_in_lower_diagonals)
+                            car1 + car2, cars_in_lower_diagonals) + cars_not_charged_at_the_left_edge
 
 
 # Return a list with all the possible actions for the given state matrix Xs
@@ -97,10 +112,9 @@ def get_possible_actions(Xs):
 
 
 # Returns the cost of the given state-action
-#TODO: Add the sum to the cost when cars are at the edge and they are not charged
 def get_cost(Xs, resulting_Xs, action, pv_energy_generated):
     cost_demand = get_cost_demand(Xs, action, pv_energy_generated)
-    cost_penalty = get_cost_penalty(resulting_Xs)
+    cost_penalty = get_cost_penalty(Xs, resulting_Xs, action)
     return cost_demand + cost_penalty
 
 
@@ -118,8 +132,8 @@ def get_cost_demand(Xs, action, pv_energy_generated):
 
 
 # Returns the penalty cost of having cars in the lower diagonals, which means that those cars will not be fully charged
-def get_cost_penalty(resulting_Xs):
-    return M * get_cars_in_lower_diagonals(resulting_Xs)
+def get_cost_penalty(Xs, resulting_Xs, action):
+    return M * get_cars_in_lower_diagonals(Xs, resulting_Xs, action)
 
 
 # This method is used for shifting the matrix one position to the left after finishing the timeslot

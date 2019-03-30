@@ -72,7 +72,7 @@ class StateActionTuples(unittest.TestCase):
                                           [0, 0, 0]])
 
         actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
-        expected_cost = 0
+        expected_cost = M * 1
 
         self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
         self.assertEqual(expected_cost, actual_cost)
@@ -90,7 +90,7 @@ class StateActionTuples(unittest.TestCase):
                                           [0, 1, 0]])
 
         actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
-        expected_cost = M * 2
+        expected_cost = M * 3
 
         self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
         self.assertEqual(expected_cost, actual_cost)
@@ -126,7 +126,7 @@ class StateActionTuples(unittest.TestCase):
                                           [1, 0, 0]])
 
         actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
-        expected_cost = M * 1
+        expected_cost = M * 3
 
         self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
         self.assertEqual(expected_cost, actual_cost)
@@ -144,7 +144,7 @@ class StateActionTuples(unittest.TestCase):
                                           [0, 0, 0]])
 
         actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
-        expected_cost = 0
+        expected_cost = M * 1
 
         self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
         self.assertEqual(expected_cost, actual_cost)
@@ -307,6 +307,60 @@ class StateActionTuples(unittest.TestCase):
 
         actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
         expected_cost = (1 * 1 * charging_rate)**2
+
+        self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
+        self.assertEqual(expected_cost, actual_cost)
+
+    def test_not_charging_left_corner(self):
+        Xs = np.array([[1, 0, 0],
+                       [0, 0, 0],
+                       [1, 0, 0]])
+
+        action = np.array([0, 0, 0])
+
+        actual_resulting_Xs = get_resulting_Xs_matrix(Xs, action)
+        expected_resulting_Xs = np.array([[0, 0, 0],
+                                          [0, 0, 0],
+                                          [0, 0, 0]])
+
+        actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
+        expected_cost = M * 2
+
+        self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
+        self.assertEqual(expected_cost, actual_cost)
+
+    def test_charging_left_corner(self):
+        Xs = np.array([[1, 0, 0],
+                       [0, 0, 0],
+                       [0, 0, 0]])
+
+        action = np.array([1, 0, 0])
+
+        actual_resulting_Xs = get_resulting_Xs_matrix(Xs, action)
+        expected_resulting_Xs = np.array([[0, 0, 0],
+                                          [0, 0, 0],
+                                          [0, 0, 0]])
+
+        actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
+        expected_cost = (1 * 1 * charging_rate)**2
+
+        self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
+        self.assertEqual(expected_cost, actual_cost)
+
+    def test_half_charging_left_corner(self):
+        Xs = np.array([[2, 0, 0],
+                       [0, 0, 0],
+                       [0, 0, 0]])
+
+        action = np.array([0.5, 0, 0])
+
+        actual_resulting_Xs = get_resulting_Xs_matrix(Xs, action)
+        expected_resulting_Xs = np.array([[0, 0, 0],
+                                          [0, 0, 0],
+                                          [0, 0, 0]])
+
+        actual_cost = get_cost(Xs, actual_resulting_Xs, action, 0)
+        expected_cost = (2 * 0.5 * charging_rate)**2 + M * 1
 
         self.assertTrue(np.array_equal(actual_resulting_Xs, expected_resulting_Xs))
         self.assertEqual(expected_cost, actual_cost)

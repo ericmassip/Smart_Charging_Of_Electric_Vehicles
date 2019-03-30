@@ -72,10 +72,11 @@ def get_policy_cost(sessions_of_the_day):
 
         # TODO: Iterate over the possible actions to take and choose the one with lowest Q-value
         policy_action = []
-        Xs = get_resulting_Xs_matrix(next_timeslot, Xs, policy_action)
+        resulting_Xs = get_resulting_Xs_matrix(Xs, policy_action)
 
         pv_energy_generated = 0
-        policy_cost_day += get_cost(Xs, policy_action, pv_energy_generated)
+        policy_cost_day += get_cost(Xs, resulting_Xs, policy_action, pv_energy_generated)
+        Xs = resulting_Xs.copy()
 
     return policy_cost_day
 
@@ -84,21 +85,21 @@ def get_policy_cost(sessions_of_the_day):
 def get_BAU_cost(sessions_of_the_day):
     BAU_cost_day = 0
     day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
+    BAU_default_action = np.ones(Smax)
 
     Xs = np.zeros((Smax, Smax))
 
     for timeslot in range(1, Smax + 1):
         Xs = add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions)
-        BAU_action = np.ones(Smax)
-        next_timeslot = timeslot + 1
 
-        Xs = get_resulting_Xs_matrix(next_timeslot, Xs, BAU_action)
+        resulting_Xs = get_resulting_Xs_matrix(Xs, BAU_default_action)
 
         pv_energy_generated = 0
-        BAU_cost_day += get_cost(Xs, BAU_action, pv_energy_generated)
+        BAU_cost_day += get_cost(Xs, resulting_Xs, BAU_default_action, pv_energy_generated)
+        Xs = resulting_Xs.copy()
 
     return BAU_cost_day
 
 
-print('Optimal cost: ' + str(get_optimal_cost()))
-print('BAU cost: ' + str(get_BAU_cost(sessions_of_the_day)))
+#print('Optimal cost: ' + str(get_optimal_cost()))
+#print('BAU cost: ' + str(get_BAU_cost(sessions_of_the_day)))

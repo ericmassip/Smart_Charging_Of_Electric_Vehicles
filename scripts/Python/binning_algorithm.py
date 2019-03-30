@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import json
 
 from session_helper import *
