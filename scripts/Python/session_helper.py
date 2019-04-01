@@ -4,11 +4,11 @@ import itertools
 import functools
 
 start_hour = 6
-end_hour = 12
+end_hour = 22
 Hmax = end_hour - start_hour
 deltaTslot = 2
 Smax = int(Hmax/deltaTslot)
-Nmax = 3
+Nmax = 6
 charging_rate = 1
 M = 2 * Nmax
 
@@ -17,10 +17,10 @@ M = 2 * Nmax
 # The sessions sent as a parameter should belong to the day being computed
 def get_dict_of_day_transactions(sessions):
     day_transactions_dict = []
-    for session in sessions:
-        start_time = pd.to_datetime(session['Started'])
-        connection_time = pd.to_numeric(session['ConnectedTime'])
-        charge_time = pd.to_numeric(session['ChargeTime'])
+    for index, row in sessions.iterrows():
+        start_time = pd.to_datetime(index)
+        connection_time = pd.to_numeric(row['ConnectedTime'])
+        charge_time = pd.to_numeric(row['ChargeTime'])
 
         session_start_timeslot = get_session_start_timeslot(start_time)
 

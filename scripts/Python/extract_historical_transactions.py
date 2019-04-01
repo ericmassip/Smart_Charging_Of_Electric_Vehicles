@@ -1,8 +1,7 @@
 import pandas as pd
-import datetime
 import azure_db_service
 import datetime
-
+from session_helper import Hmax
 
 historical_transactions = azure_db_service.get_data_from_historical_transactions()
 clean_historical_transactions = historical_transactions[['idTag', 'startTime', 'stopTime']]
@@ -41,7 +40,7 @@ def get_charging_time(transactionId):
 
 
 def get_connection_time(start_time, end_time):
-    return (end_time - start_time).seconds/3600
+    return (end_time - start_time).seconds / 3600
 
 
 transactions_cleaned = []
@@ -51,14 +50,23 @@ for i in range(len(clean_historical_transactions)):
     started = pd.to_datetime(clean_historical_transactions.iat[i, 1])
     ended = pd.to_datetime(clean_historical_transactions.iat[i, 2])
     connected_time = round(get_connection_time(started, ended), 2)
-    charge_time = round(get_charging_time(transactionId), 2)
-    idTag = clean_historical_transactions.iat[i, 0]
 
-    transactions_cleaned.append(
-        {'transactionId': transactionId, 'Started': started, 'Ended': ended, 'ConnectedTime': connected_time,
-         'ChargeTime': charge_time, 'idTag': idTag})
+    # We prune the transactions longer than Hmax, because we consider transactions longer than one working day
+    # as outliers. Similarly, we prune transactions shorter than half an hour, cuz they are usually used for testing
+    # purposes.
+    if 0.5 < connected_time < Hmax and \
+            started.year == ended.year and \
+            started.month == ended.month and \
+            started.day == ended.day:
+
+        charge_time = round(get_charging_time(transactionId), 2)
+        idTag = clean_historical_transactions.iat[i, 0]
+
+        transactions_cleaned.append(
+            {'transactionId': transactionId, 'Started': started, 'Ended': ended, 'ConnectedTime': connected_time,
+             'ChargeTime': charge_time, 'idTag': idTag})
+
     print('Transaction: ' + str(i))
-
 
 df = pd.DataFrame(transactions_cleaned)
 df.to_csv('historical_transactions_' + str(datetime.date.today()) + '.csv')

@@ -108,9 +108,9 @@ def get_accumulated_cost(trajectory):
                             acc + state_action_tuple.cost, trajectory, 0)
 
 
-#json_to_be_beautified = json.loads(open('dict.json').read())
-#state_actions = json_to_be_beautified['trajectories']
-#state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
+json_to_be_beautified = json.loads(open('../../trajectories/trajectories_2018-08-13.json').read())
+state_actions = json_to_be_beautified['trajectories']
+state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
 
 #for state_action_tuple in state_action_tuples:
 #    show_state_action_tuple(state_action_tuple)
@@ -118,7 +118,7 @@ def get_accumulated_cost(trajectory):
 #unique_state_action_tuples = get_unique_state_action_tuples(state_action_tuples)
 #print('Unique state action tuples: ' + str(len(unique_state_action_tuples)))
 
-#organized_trajectories = get_organized_trajectories(state_action_tuples)
+organized_trajectories = get_organized_trajectories(state_action_tuples)
 #print(organized_trajectories)
-#print('Number of trajectories: ' + str(len(organized_trajectories)))
-#show_organized_trajectories(organized_trajectories)
+show_organized_trajectories(organized_trajectories)
+print('Number of trajectories: ' + str(len(organized_trajectories)))
