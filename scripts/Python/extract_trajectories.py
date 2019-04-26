@@ -12,7 +12,7 @@ timedelta_1_day = timedelta(days=1)
 days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
 
 sessions_to_be_checked = []
-sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-01.csv', index_col='Started')
+sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv', index_col='Started')
 df = sessions
 df.index = pd.to_datetime(df.index)
 
@@ -70,7 +70,7 @@ def save_json_day_trajectories(sessions_of_the_day):
         save_state_action_tuple(timeslot, Xs, action, day_transactions, state_action_tuples)
 
     json_dump = json.dumps({'trajectories': state_action_tuples})
-    f = open('../../trajectories/trajectories_' + day + '.json', "w")
+    f = open('../../../datasets/Trajectories/trajectories_' + day + '.json', "w")
     f.write(json_dump)
     f.close()
 

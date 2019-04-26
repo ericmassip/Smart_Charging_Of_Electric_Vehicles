@@ -5,9 +5,9 @@ from session_helper import *
 sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-03-06.csv')
 
 #sessions_of_the_day = [sessions.loc[7], sessions.loc[8], sessions.loc[9]]
-#sessions_of_the_day = [sessions.loc[15], sessions.loc[16]] # For testing with Smax = 3, start_hour = 6 and end_hour = 12
+sessions_of_the_day = [sessions.loc[15], sessions.loc[16]] # For testing with Smax = 3, start_hour = 6 and end_hour = 12
 
-sessions_of_the_day = []
+#sessions_of_the_day = []
 
 # The PV obtained from the sun in UTC in Genk in the longest day of the year starts at 6am and ends at 10pm.
 # This means that Hmax = 16h. I choose deltaTslot = 2. Then, Smax = 16/2 = 8. Every timeslot will be 2h long.

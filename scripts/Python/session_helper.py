@@ -85,14 +85,21 @@ def get_cars_not_charged_at_the_left_edge(Xs, action):
 
     if cars_in_left_corner > 0:
         cars_in_main_diagonal = np.sum(np.diagonal(Xs, 0))
-        cars_not_charged_left_corner = cars_in_left_corner - action[0] * cars_in_main_diagonal
+        cars_to_be_charged_in_main_diagonal = cars_in_main_diagonal * action[0]
+        cars_not_charged_left_corner = 0
+
+        if cars_in_left_corner > cars_to_be_charged_in_main_diagonal:
+            cars_not_charged_left_corner = cars_in_left_corner - cars_to_be_charged_in_main_diagonal
+
+        #cars_not_charged_left_corner = cars_in_left_corner - action[0] * cars_in_main_diagonal
+        #cars_not_charged_left_corner = cars_in_left_corner - action[0] * cars_in_left_corner
         cars_not_charged_at_the_left_edge = cars_not_charged_at_the_left_edge + cars_not_charged_left_corner
 
     return cars_not_charged_at_the_left_edge
 
 
 # Returns an array of length Smax where each element is the amount of cars in the diagonal. Each element corresponds
-# to one of the low diagonals. It starts at diagonal -1, until Smax-1
+# to one of the low diagonals. It starts at diagonal -1, until -(Smax-1)
 def get_cars_in_lower_diagonals(Xs, resulting_Xs, action):
     cars_not_charged_at_the_left_edge = get_cars_not_charged_at_the_left_edge(Xs, action)
     cars_in_lower_diagonals = [np.sum(np.diagonal(resulting_Xs, (-1) * d)) for d in range(1, Smax)]
