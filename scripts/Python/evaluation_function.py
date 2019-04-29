@@ -1,17 +1,17 @@
 import json
 import glob
 import pandas as pd
+import tensorflow as tf
 import numpy as np
 import logging
 
 from keras.models import load_model
 
+import keras.losses
+keras.losses.huber_loss = tf.losses.huber_loss
+
 from session_helper import *
 import trajectory_helper
-
-# Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
-# If you prefer to keep all the run results on the log file, remove filemode='w'
-logging.basicConfig(filename='evaluation_function.log', level=logging.INFO, filemode='w')
 
 
 # Now get the optimal cost of the day iterating over all the possible trajectories
@@ -84,10 +84,15 @@ def get_policy_cost(sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 1
+n_epochs = 10
 batch_size = 32
 loss = 'mae'
-models_directory = '../../../models/n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+samples = 'all'
+models_directory = '../../../models/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+
+# Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
+# If you prefer to keep all the run results on the log file, remove filemode='w'
+logging.basicConfig(filename=models_directory + 'evaluation_function.log', level=logging.INFO, filemode='w')
 
 Q1_approximated_function = load_model(models_directory + 'Q1_approximated_function.h5')
 Q2_approximated_function = load_model(models_directory + 'Q2_approximated_function.h5')
@@ -110,7 +115,7 @@ approximated_functions = {
 }
 
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/*.json"))
 test_day_trajectories = []
 for i in range(len(day_trajectories)):
     if i != 0 and i % 5 == 0:

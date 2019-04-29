@@ -1,7 +1,9 @@
 import json
 from datetime import date, timedelta
+import random
 
 from session_helper import *
+from trajectory_helper import StateActionTuple, get_organized_trajectories
 
 start_day = date(2018, 7, 1)
 end_day = date(2019, 5, 1)
@@ -47,7 +49,18 @@ def save_state_action_tuple(timeslot, Xs, previous_action, day_transactions, sta
             save_state_action_tuple(next_timeslot, resulting_Xs, next_action, day_transactions, state_action_tuples)
 
 
-def save_json_day_trajectories(sessions_of_the_day):
+def filter_state_action_tuples(organized_trajectories):
+    state_action_tuples = []
+    for traj in random.sample(organized_trajectories, top_sampling_trajectories):
+        for state_action_tuple in traj:
+            state_action_tuples.append(
+                {'timeslot': state_action_tuple.timeslot, 'Xs': tuple(state_action_tuple.Xs.flatten()),
+                 'us': state_action_tuple.us, 'next_timeslot': state_action_tuple.next_timeslot,
+                 'resulting_Xs': tuple(state_action_tuple.resulting_Xs.flatten()), 'cost': state_action_tuple.cost})
+    return state_action_tuples
+
+
+def save_json_day_trajectories(sessions_of_the_day, top_sampling_trajectories):
     day = sessions_of_the_day.index[0].strftime('%Y-%m-%d')
     day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
 
@@ -69,8 +82,19 @@ def save_json_day_trajectories(sessions_of_the_day):
     for action in Us:
         save_state_action_tuple(timeslot, Xs, action, day_transactions, state_action_tuples)
 
+    if top_sampling_trajectories != 'all':
+        state_action_tuples_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
+        organized_trajectories = get_organized_trajectories(state_action_tuples_filtered)
+        print('Original number of trajectories = ' + str(len(organized_trajectories)))
+        if len(organized_trajectories) > top_sampling_trajectories:
+            state_action_tuples = filter_state_action_tuples(organized_trajectories)
+
+    state_action_tuples_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
+    organized_trajectories = get_organized_trajectories(state_action_tuples_filtered)
+    print('Reduced number of trajectories = ' + str(len(organized_trajectories)))
+
     json_dump = json.dumps({'trajectories': state_action_tuples})
-    f = open('../../../datasets/Trajectories/trajectories_' + day + '.json', "w")
+    f = open('../../../datasets/Trajectories/' + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
     f.write(json_dump)
     f.close()
 
@@ -79,5 +103,7 @@ def save_json_day_trajectories(sessions_of_the_day):
 
 #save_json_day_trajectories(sessions_to_be_checked[0])
 
+top_sampling_trajectories = 10000
+
 for sessions_of_the_day in sessions_to_be_checked:
-    save_json_day_trajectories(sessions_of_the_day)
+    save_json_day_trajectories(sessions_of_the_day, top_sampling_trajectories)
