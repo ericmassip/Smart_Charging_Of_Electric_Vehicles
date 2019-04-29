@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import tensorflow as tf
 import os
+import pickle
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -14,13 +15,14 @@ from session_helper import Nmax, Smax, get_possible_actions
 
 def preprocess_trajectories(day_trajectories):
     F = []
-    #i = 0
+    i = 0
     for day in day_trajectories:
         state_actions = json.loads(open(day).read())['trajectories']
         state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
         F.extend(state_action_tuples)
-        #print(i)
-        #i += 1
+        if i % 5 == 0:
+            print('Preprocessed ' + str(i + 1) + ' days.')
+        i += 1
     return F
 
 
@@ -60,7 +62,7 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
     model.compile(optimizer='rmsprop', loss=loss)
     #model.compile(optimizer='rmsprop', loss=tf.losses.huber_loss)
 
-    model.fit(x, y, epochs=n_epochs, batch_size=batch_size, verbose=2)
+    model.fit(x, y, epochs=n_epochs, batch_size=batch_size, validation_split=0.2, verbose=2)
 
     return model
 
@@ -68,9 +70,9 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
 input_vector_size = Smax**2 + Smax + 1
 
 # Train 75% - Test 25%
-#day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/trajectories_2018-10-30.json"]
-day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/trajectories_2018-10-31.json"]
+#day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/trajectories_2018-10-31.json"]
 
 train_day_trajectories = []
 for i in range(len(day_trajectories)):
@@ -80,6 +82,9 @@ for i in range(len(day_trajectories)):
 print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
 train_F = preprocess_trajectories(train_day_trajectories)
+pickle.dump(train_F, open('train_F.p', 'wb'))
+
+#train_F = pickle.load(open('train_F.p', mode='rb'))
 
 n_epochs = 1
 batch_size = 32
