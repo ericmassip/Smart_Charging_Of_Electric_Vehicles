@@ -73,14 +73,15 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
 input_vector_size = Smax**2 + Smax + 1
 
 n_epochs = 1
-batch_size = 32
+batch_size = 256
 loss = 'mae'
-samples = 'test'
+samples = 'all'
+network = 'Baseline' # 'Baseline' or 'PV'
 
-#day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/trajectories_2018-10-30.json"]
-day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/trajectories_2018-10-31.json"]
+#day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/Baseline/all/trajectories_2018-10-31.json"]
 
 train_day_trajectories = []
 for i in range(len(day_trajectories)):
@@ -94,7 +95,7 @@ train_F = preprocess_trajectories(train_day_trajectories)
 
 #train_F = pickle.load(open('train_F.p', mode='rb'))
 
-models_directory = '../../../models/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../models/network_' + str(network) + '_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 if not os.path.exists(models_directory):
     os.makedirs(models_directory)
 

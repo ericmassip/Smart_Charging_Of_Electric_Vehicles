@@ -9,7 +9,7 @@ Hmax = end_hour - start_hour
 deltaTslot = 2
 Smax = int(Hmax/deltaTslot)
 Nmax = 6
-charging_rate = 1
+charging_rate = 7500
 M = 2 * Nmax
 
 

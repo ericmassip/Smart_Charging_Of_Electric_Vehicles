@@ -31,8 +31,11 @@ def save_state_action_tuple(timeslot, Xs, previous_action, day_transactions, sta
     next_timeslot = timeslot + 1
 
     resulting_Xs = get_resulting_Xs_matrix(Xs, previous_action)
+
+    pv_energy_generated = 0
+
     # Compute cost function
-    cost = get_cost(Xs, resulting_Xs, previous_action, 0)
+    cost = get_cost(Xs, resulting_Xs, previous_action, pv_energy_generated)
     # Append tuple
     state_action_tuples.append(
         {'timeslot': timeslot, 'Xs': tuple(Xs.flatten() / Nmax), 'us': previous_action, 'next_timeslot': next_timeslot,
