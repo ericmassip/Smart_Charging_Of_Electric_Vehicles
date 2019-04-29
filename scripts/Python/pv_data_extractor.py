@@ -2,7 +2,7 @@ import urllib
 import requests
 import pandas as pd
 import datetime
-from datetime import timedelta
+from datetime import date, timedelta
 from datetime import datetime
 import json
 
@@ -14,8 +14,48 @@ pswd = 'ssCpoDC3uHF4ssHJtvMf'
 
 DATE_FORMAT_STR = "%Y-%m-%d"
 
-start_time = datetime(2017, 12, 1)
-end_time = datetime(2017, 12, 16)
+start_day = date(2018, 7, 1)
+end_day = date(2019, 5, 1)
+
+delta = end_day - start_day
+timedelta_1_day = timedelta(days=1)
+
+days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
+
+sessions_to_be_checked = []
+sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv', index_col='Started')
+df = sessions
+df.index = pd.to_datetime(df.index)
+
+days_to_be_checked_2 = []
+
+for day in days_to_be_checked:
+    sessions_of_a_day = df[df.index.dayofyear == pd.Timestamp(day).dayofyear]
+
+    if not sessions_of_a_day.empty:
+        days_to_be_checked_2.append(pd.Timestamp(day)._date_repr)
+
+print('There are ' + str(len(days_to_be_checked_2)) + ' days to be checked.')
+
+start_time = datetime.strptime(days_to_be_checked_2[0], DATE_FORMAT_STR)
+end_time = datetime.strptime(days_to_be_checked_2[-1:][0], DATE_FORMAT_STR)
+
+
+def get_time_dictionary_every_15min(start_time, end_time):
+    timedelta_15 = timedelta(minutes=15)
+
+    dates = []
+
+    for date in days_to_be_checked_2:
+        date = datetime.strptime(date, DATE_FORMAT_STR)
+        for i in range(96):
+            dates.append(date)
+            date = date + timedelta_15
+
+    return dates
+
+
+dates = get_time_dictionary_every_15min(start_time, end_time)
 
 
 def get_inverter_ids():
@@ -44,21 +84,6 @@ def get_power_consumptions(start, end):
 power_consumptions = get_power_consumptions(start_time, end_time)
 
 
-def get_time_dictionary_every_5min(start_time, end_time):
-    timedelta_5 = timedelta(minutes=5)
-    
-    dates = []
-    date = start_time
-    while date != end_time:
-        dates.append(date)
-        date = date + timedelta_5
-        
-    return dates
-
-
-dates = get_time_dictionary_every_5min(start_time, end_time)
-
-
 def get_total_power_consumption():
     total_power_consumption = []
     for date_to_be_checked in dates:
@@ -80,7 +105,6 @@ def get_total_power_consumption():
 
 total_power_consumption = get_total_power_consumption()
 
-
 df = pd.DataFrame(total_power_consumption)
 
-df.to_csv('pv/total_power_consumption_12_1_2017.csv')
+df.to_csv('../../../datasets/PV/total_power_consumption.csv')
