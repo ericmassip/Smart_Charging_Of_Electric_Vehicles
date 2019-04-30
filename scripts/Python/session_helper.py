@@ -6,12 +6,13 @@ import functools
 start_hour = 6
 end_hour = 22
 Hmax = end_hour - start_hour
-deltaTslot = 2
+deltaTslot = 2  # Easier if it's integers to represent hours
 Smax = int(Hmax/deltaTslot)
 Nmax = 6
-charging_rate = 7500
-M = 2 * Nmax
-
+charging_rate = 7.5
+charging_energy_necessary_per_timeslot = charging_rate * deltaTslot
+M = 2 * Nmax * charging_energy_necessary_per_timeslot  # This value represents the energy needed if all cars are being charged times 2 for penalization
+pv_scale = (Nmax * charging_energy_necessary_per_timeslot) / 450  # 450 is the maximum pv energy value generated
 
 # This method returns a dictionary formed by the sessions' timeslot, time to departure and time to full charge.
 # The sessions sent as a parameter should belong to the day being computed
@@ -132,10 +133,12 @@ def get_cost_demand(Xs, action, pv_energy_generated):
 
     d = 0
     for cars_in_d in cars_in_above_diagonals:
-        cost_of_cars_action += cars_in_d * action[d] * charging_rate
+        cost_of_cars_action += cars_in_d * action[d] * charging_energy_necessary_per_timeslot
         d += 1
 
-    return (cost_of_cars_action - pv_energy_generated) ** 2
+    cost_demand = 0 if (cost_of_cars_action - pv_energy_generated) < 0 else (cost_of_cars_action - pv_energy_generated)
+
+    return cost_demand
 
 
 # Returns the penalty cost of having cars in the lower diagonals, which means that those cars will not be fully charged

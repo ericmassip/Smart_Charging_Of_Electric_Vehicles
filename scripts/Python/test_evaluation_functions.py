@@ -20,7 +20,7 @@ class StateActionTuples(unittest.TestCase):
 
     def test_BAU_cost(self):
         actual_BAU_cost = get_BAU_cost(pd.DataFrame(self.sessions_of_the_day))
-        expected_BAU_cost = ((2 * 1 * charging_rate)**2) + ((2 * 1 * charging_rate)**2)
+        expected_BAU_cost = (2 * 1 * charging_rate) + (2 * 1 * charging_rate)
 
         self.assertEqual(expected_BAU_cost, actual_BAU_cost)
 

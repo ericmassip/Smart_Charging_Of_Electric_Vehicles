@@ -62,8 +62,8 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
     model.add(Dense(64, activation='relu'))
     model.add(Dense(1, activation='linear'))
 
-    model.compile(optimizer='rmsprop', loss=loss)
-    #model.compile(optimizer='rmsprop', loss=tf.losses.huber_loss)
+    #model.compile(optimizer='rmsprop', loss=loss)
+    model.compile(optimizer='rmsprop', loss=tf.losses.huber_loss)
 
     model.fit(x, y, epochs=n_epochs, batch_size=batch_size, validation_split=0.2, verbose=2)
 
@@ -74,9 +74,9 @@ input_vector_size = Smax**2 + Smax + 1
 
 n_epochs = 1
 batch_size = 256
-loss = 'mae'
-samples = 'all'
-network = 'Baseline' # 'Baseline' or 'PV'
+loss = 'huber'
+samples = 5000
+network = 'PV' # 'Baseline' or 'PV'
 
 day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
@@ -88,12 +88,12 @@ for i in range(len(day_trajectories)):
     if i == 0 or i % 5 != 0:
         train_day_trajectories.append(day_trajectories[i])
 
-print('There are ' + str(len(train_day_trajectories)) + ' training days.')
-
 train_F = preprocess_trajectories(train_day_trajectories)
-#pickle.dump(train_F, open('train_F.p', 'wb'))
+pickle.dump(train_F, open('train_F.p', 'wb'))
 
 #train_F = pickle.load(open('train_F.p', mode='rb'))
+
+print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
 models_directory = '../../../models/network_' + str(network) + '_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 if not os.path.exists(models_directory):
@@ -101,7 +101,7 @@ if not os.path.exists(models_directory):
 
 previous_Q_approximated_function = None
 # Training
-for timeslot in range(1, 2):
+for timeslot in range(1, Smax + 1):
     print('')
     print('')
     print('Iteration for timeslot ' + str(timeslot))

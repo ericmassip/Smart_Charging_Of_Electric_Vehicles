@@ -84,9 +84,9 @@ def get_policy_cost(sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 10
+n_epochs = 40
 batch_size = 32
-loss = 'mae'
+loss = 'huber'
 samples = 'all'
 network = 'Baseline' # 'Baseline' or 'PV'
 models_directory = '../../../models/network_' + str(network) + '_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
@@ -116,7 +116,8 @@ approximated_functions = {
 }
 
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/all/*.json"))
+#day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/all/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/PV/all/*.json"))
 test_day_trajectories = []
 for i in range(len(day_trajectories)):
     if i != 0 and i % 5 == 0:

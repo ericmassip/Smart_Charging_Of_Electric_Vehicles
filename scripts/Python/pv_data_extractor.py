@@ -6,11 +6,14 @@ from datetime import date, timedelta
 from datetime import datetime
 import json
 
+import azure_db_credentials
+
 URL = 'https://st-dev-data-api.azurewebsites.net'
 invertersURL = urllib.parse.urljoin(URL, '/api/v0.1/buildings/energyville1/pv/roof/inverters/')
 powerURL = urllib.parse.urljoin(URL, '/api/v0.1/buildings/energyville1/pv/roof/power/')
-user = 'eric_massip'
-pswd = 'ssCpoDC3uHF4ssHJtvMf'
+
+storage_account_name = azure_db_credentials.smarthor_user
+sas_token = azure_db_credentials.smarthor_password
 
 DATE_FORMAT_STR = "%Y-%m-%d"
 
