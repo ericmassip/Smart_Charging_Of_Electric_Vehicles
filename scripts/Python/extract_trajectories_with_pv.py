@@ -87,13 +87,14 @@ def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactio
             save_state_action_tuple(i_day, next_timeslot, resulting_Xs, next_action, day_transactions, state_action_tuples)
 
 
-def filter_state_action_tuples(organized_trajectories):
+def filter_state_action_tuples(organized_trajectories, top_sampling_trajectories):
     state_action_tuples = []
     trajectories_to_be_filtered = organized_trajectories
 
     # If there are more trajectories than the number of samples to be extracted, then get a random number of them.
-    if len(organized_trajectories) > top_sampling_trajectories:
-        trajectories_to_be_filtered = random.sample(organized_trajectories, top_sampling_trajectories)
+    if top_sampling_trajectories != 'all':
+        if len(organized_trajectories) > top_sampling_trajectories:
+            trajectories_to_be_filtered = random.sample(organized_trajectories, top_sampling_trajectories)
 
     for traj in trajectories_to_be_filtered:
         for state_action_tuple in traj:
@@ -128,19 +129,18 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
     for action in Us:
         save_state_action_tuple(i_day, timeslot, Xs, action, day_transactions, state_action_tuples)
 
-    if top_sampling_trajectories != 'all':
-        state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
-        organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
-        print('Original number of trajectories = ' + str(len(organized_trajectories)))
+    state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
+    organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
+    print('Original number of trajectories = ' + str(len(organized_trajectories)))
 
-        state_action_tuples = filter_state_action_tuples(organized_trajectories)
+    state_action_tuples = filter_state_action_tuples(organized_trajectories, top_sampling_trajectories)
 
     state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
     organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
     print('Reduced number of trajectories = ' + str(len(organized_trajectories)))
 
     json_dump = json.dumps({'trajectories': state_action_tuples})
-    f = open('../../../datasets/Trajectories/PV/' + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
+    f = open('../../../datasets/Trajectories/' + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
     f.write(json_dump)
     f.close()
 
@@ -149,7 +149,7 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
 
 #save_json_day_trajectories(sessions_to_be_checked[0])
 
-top_sampling_trajectories = 15000
+top_sampling_trajectories = 'all'
 
 for i_day in range(len(sessions_to_be_checked)):
     sessions_of_the_day = sessions_to_be_checked[i_day]

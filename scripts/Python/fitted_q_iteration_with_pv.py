@@ -74,6 +74,7 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
 
     return model
 
+
 # Input vector size is a 2-D vector of (Smax, Smax) flattened,
 # plus a vector of size Smax plus 1 for the timeslot and plus 1 for the pv
 input_vector_size = Smax**2 + Smax + 1 + 1
@@ -81,10 +82,9 @@ input_vector_size = Smax**2 + Smax + 1 + 1
 n_epochs = 1
 batch_size = 256
 loss = 'huber'
-samples = 15000
-network = 'PV'  # 'Baseline' or 'PV'
+samples = 5000
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/" + str(samples) + "/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/trajectories_2018-10-30.json"]
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/Baseline/all/trajectories_2018-10-31.json"]
@@ -95,13 +95,13 @@ for i in range(len(day_trajectories)):
         train_day_trajectories.append(day_trajectories[i])
 
 train_F = preprocess_trajectories(train_day_trajectories)
-#pickle.dump(train_F, open('train_F_15000.p', 'wb'))
+pickle.dump(train_F, open('train_F_15000.p', 'wb'))
 
 #train_F = pickle.load(open('train_F_5000.p', mode='rb'))
 
 print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
-models_directory = '../../../models/network_' + str(network) + '_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../models/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 if not os.path.exists(models_directory):
     os.makedirs(models_directory)
 

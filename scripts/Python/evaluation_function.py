@@ -88,8 +88,7 @@ n_epochs = 40
 batch_size = 32
 loss = 'huber'
 samples = 'all'
-network = 'PV' # 'Baseline' or 'PV'
-models_directory = '../../../models/network_' + str(network) + '_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../models/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 
 # Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
 # If you prefer to keep all the run results on the log file, remove filemode='w'
@@ -116,7 +115,7 @@ approximated_functions = {
 }
 
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + network + "/all/*.json"))
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/*.json"))
 test_day_trajectories = []
 for i in range(len(day_trajectories)):
     if i != 0 and i % 5 == 0:
