@@ -67,12 +67,14 @@ def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactio
     resulting_Xs = get_resulting_Xs_matrix(Xs, previous_action)
     pv_energy_generated = pv_per_timeslot_dict[i_day][timeslot]
 
+    next_pv_energy_generated = 0 if timeslot == Smax else pv_per_timeslot_dict[i_day][next_timeslot]
+
     # Compute cost function
     cost = get_cost(Xs, resulting_Xs, previous_action, pv_energy_generated)
     # Append tuple
     state_action_tuples.append(
         {'timeslot': timeslot, 'Xs': tuple(Xs.flatten() / Nmax), 'us': previous_action, 'next_timeslot': next_timeslot,
-         'resulting_Xs': tuple(resulting_Xs.flatten() / Nmax), 'cost': cost})
+         'resulting_Xs': tuple(resulting_Xs.flatten() / Nmax), 'cost': cost, 'pv': pv_energy_generated, 'next_pv': next_pv_energy_generated})
 
     if timeslot < Smax:
         resulting_Xs = add_cars_starting_at_this_timeslot(next_timeslot, resulting_Xs, day_transactions)
@@ -87,12 +89,19 @@ def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactio
 
 def filter_state_action_tuples(organized_trajectories):
     state_action_tuples = []
-    for traj in random.sample(organized_trajectories, top_sampling_trajectories):
+    trajectories_to_be_filtered = organized_trajectories
+
+    # If there are more trajectories than the number of samples to be extracted, then get a random number of them.
+    if len(organized_trajectories) > top_sampling_trajectories:
+        trajectories_to_be_filtered = random.sample(organized_trajectories, top_sampling_trajectories)
+
+    for traj in trajectories_to_be_filtered:
         for state_action_tuple in traj:
             state_action_tuples.append(
                 {'timeslot': state_action_tuple.timeslot, 'Xs': tuple(state_action_tuple.Xs.flatten()),
                  'us': state_action_tuple.us, 'next_timeslot': state_action_tuple.next_timeslot,
-                 'resulting_Xs': tuple(state_action_tuple.resulting_Xs.flatten()), 'cost': state_action_tuple.cost})
+                 'resulting_Xs': tuple(state_action_tuple.resulting_Xs.flatten()), 'cost': state_action_tuple.cost,
+                 'pv': state_action_tuple.pv, 'next_pv': state_action_tuple.next_pv})
 
     return state_action_tuples
 
@@ -120,14 +129,14 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
         save_state_action_tuple(i_day, timeslot, Xs, action, day_transactions, state_action_tuples)
 
     if top_sampling_trajectories != 'all':
-        state_action_tuples_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
-        organized_trajectories = get_organized_trajectories(state_action_tuples_filtered)
+        state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
+        organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
         print('Original number of trajectories = ' + str(len(organized_trajectories)))
-        if len(organized_trajectories) > top_sampling_trajectories:
-            state_action_tuples = filter_state_action_tuples(organized_trajectories)
 
-    state_action_tuples_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
-    organized_trajectories = get_organized_trajectories(state_action_tuples_filtered)
+        state_action_tuples = filter_state_action_tuples(organized_trajectories)
+
+    state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
+    organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
     print('Reduced number of trajectories = ' + str(len(organized_trajectories)))
 
     json_dump = json.dumps({'trajectories': state_action_tuples})
@@ -140,7 +149,7 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
 
 #save_json_day_trajectories(sessions_to_be_checked[0])
 
-top_sampling_trajectories = 5000
+top_sampling_trajectories = 15000
 
 for i_day in range(len(sessions_to_be_checked)):
     sessions_of_the_day = sessions_to_be_checked[i_day]

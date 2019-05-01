@@ -26,6 +26,13 @@ def show_state_action_tuple(state_action_tuple):
     print("")
     print('Cost:')
     print(state_action_tuple.cost)
+    print("")
+    print('PV:')
+    print(state_action_tuple.pv)
+    print("")
+    print('Next PV:')
+    print(state_action_tuple.next_pv)
+    print("")
     print('Next timeslot: ' + str(state_action_tuple.next_timeslot))
     print("")
     print("")
@@ -40,6 +47,8 @@ class StateActionTuple():
         self.resulting_Xs = np.reshape(state_action['resulting_Xs'], (Smax, Smax))
         self.cost = state_action['cost']
         self.next_timeslot = state_action['next_timeslot']
+        self.pv = state_action['pv']
+        self.next_pv = state_action['next_pv']
 
     def is_equal(self, state_action_tuple):
         return (self.timeslot == state_action_tuple.timeslot and
