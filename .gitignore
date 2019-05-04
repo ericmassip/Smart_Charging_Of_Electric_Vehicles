@@ -108,3 +108,4 @@ azure_db_credentials.py
 PV_analysis.ipynb
 testing_PV.ipynb
 .idea/
+*.p

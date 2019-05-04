@@ -100,7 +100,7 @@ pickle.dump(train_F, open('train_F_' + samples + '.p', 'wb'))
 
 print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
-models_directory = '../../../models/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../models/PV/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 if not os.path.exists(models_directory):
     os.makedirs(models_directory)
 
