@@ -80,12 +80,13 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
 input_vector_size = Smax**2 + Smax + 1 + 1
 
 n_epochs = 1
-batch_size = 256
+batch_size = 64
 loss = 'huber'
 samples = '5000'
 
 day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
+#day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
 
 train_day_trajectories = []
 for i in range(len(day_trajectories)):
@@ -95,7 +96,7 @@ for i in range(len(day_trajectories)):
 train_F = preprocess_trajectories(train_day_trajectories)
 pickle.dump(train_F, open('train_F_' + samples + '.p', 'wb'))
 
-#train_F = pickle.load(open('train_F_5000.p', mode='rb'))
+#train_F = pickle.load(open('train_F_' + samples + '.p', mode='rb'))
 
 print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
