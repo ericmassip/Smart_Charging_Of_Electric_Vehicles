@@ -63,7 +63,7 @@ def get_action_with_minimum_q_value(i_day, timeslot, Xs):
 
 def predict(i_day, next_timeslot, resulting_Xs, action, previous_Q_approximated_function):
     next_pv_energy_generated = 0 if next_timeslot > Smax else pv_per_timeslot_dict[i_day][next_timeslot]
-    input_value = np.array([next_timeslot, next_pv_energy_generated, *resulting_Xs.flatten(), *action])
+    input_value = np.array([next_pv_energy_generated, *resulting_Xs.flatten(), *action])
     return previous_Q_approximated_function.predict(np.reshape(input_value, (1, len(input_value))))
 
 
@@ -86,7 +86,7 @@ def get_policy_cost(i_day, sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 35
+n_epochs = 1
 batch_size = 64
 loss = 'huber'
 samples = '5000'
@@ -180,9 +180,9 @@ times_BAU_better = 0
 times_policy_better = 0
 draws = 0
 
-for i_day in range(len(test_day_trajectories)):
+#for i_day in range(len(test_day_trajectories)):
 #for i_day in [10, 14, 15, 16]:
-#for i_day in [14]:
+for i_day in [14]:
     day_sessions = test_day_sessions[i_day]
     day_trajectories = test_day_trajectories[i_day]
 
