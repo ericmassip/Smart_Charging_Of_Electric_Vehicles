@@ -85,11 +85,11 @@ def get_policy_cost(i_day, sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 100
+n_epochs = 35
 batch_size = 64
 loss = 'huber'
 samples = 5000
-models_directory = '../../../models/Baseline/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../models/Baseline/Baseline_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 
 # Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
 # If you prefer to keep all the run results on the log file, remove filemode='w'

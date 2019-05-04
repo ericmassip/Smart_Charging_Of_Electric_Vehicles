@@ -86,11 +86,11 @@ def get_policy_cost(i_day, sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 100
+n_epochs = 35
 batch_size = 64
 loss = 'huber'
-samples = 5000
-models_directory = '../../../models/PV/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+samples = '5000'
+models_directory = '../../../models/PV/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 
 # Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
 # If you prefer to keep all the run results on the log file, remove filemode='w'
@@ -116,8 +116,8 @@ approximated_functions = {
     8: Q8_approximated_function
 }
 
-
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/all/*.json"))
+samples_all = 'all'
+day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + samples_all + "/*.json"))
 test_day_trajectories = []
 for i_day in range(len(day_trajectories)):
     if i_day != 0 and i_day % 5 == 0:
@@ -181,6 +181,8 @@ times_policy_better = 0
 draws = 0
 
 for i_day in range(len(test_day_trajectories)):
+#for i_day in [10, 14, 15, 16]:
+#for i_day in [14]:
     day_sessions = test_day_sessions[i_day]
     day_trajectories = test_day_trajectories[i_day]
 

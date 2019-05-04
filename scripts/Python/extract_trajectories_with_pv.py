@@ -5,7 +5,7 @@ import random
 from session_helper import *
 from trajectory_helper import StateActionTuple, get_organized_trajectories
 
-start_day = date(2018, 7, 1)
+start_day = date(2018, 8, 7)
 end_day = date(2019, 5, 1)
 
 delta = end_day - start_day
@@ -92,7 +92,8 @@ def filter_state_action_tuples(organized_trajectories, top_sampling_trajectories
     trajectories_to_be_filtered = organized_trajectories
 
     # If there are more trajectories than the number of samples to be extracted, then get a random number of them.
-    if top_sampling_trajectories != 'all':
+    if top_sampling_trajectories != 'all' and top_sampling_trajectories.split('_')[0] != 'all':
+        top_sampling_trajectories = int(top_sampling_trajectories.split('_')[0]) if '_' in top_sampling_trajectories else int(top_sampling_trajectories)
         if len(organized_trajectories) > top_sampling_trajectories:
             trajectories_to_be_filtered = random.sample(organized_trajectories, top_sampling_trajectories)
 
@@ -152,5 +153,6 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
 top_sampling_trajectories = 'all'
 
 for i_day in range(len(sessions_to_be_checked)):
+#for i_day in [85]:
     sessions_of_the_day = sessions_to_be_checked[i_day]
     save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajectories)

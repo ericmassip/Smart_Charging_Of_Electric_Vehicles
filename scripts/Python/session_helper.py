@@ -13,7 +13,7 @@ charging_rate = 7.5
 charging_energy_necessary_per_timeslot = charging_rate * deltaTslot
 M = 2 * Nmax * charging_energy_necessary_per_timeslot  # This value represents the energy needed if all cars are being charged times 2 for penalization
 pv_scale = (Nmax * charging_energy_necessary_per_timeslot) / 450  # 450 is the maximum pv energy value generated
-#pv_scale = 0.1
+
 
 # This method returns a dictionary formed by the sessions' timeslot, time to departure and time to full charge.
 # The sessions sent as a parameter should belong to the day being computed
