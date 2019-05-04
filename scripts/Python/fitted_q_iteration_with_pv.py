@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import pickle
+import random
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -84,9 +85,9 @@ batch_size = 64
 loss = 'huber'
 samples = '5000'
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
+#day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
-#day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
+day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
 
 train_day_trajectories = []
 for i in range(len(day_trajectories)):
@@ -112,7 +113,9 @@ for timeslot in range(1, Smax + 1):
     print('Iteration for timeslot ' + str(timeslot))
 
     state_action_tuples = [x for x in train_F if x.timeslot == timeslot]
+    random.shuffle(state_action_tuples)
     x_T_reg, y_T_reg = split_T_reg(state_action_tuples, previous_Q_approximated_function)
+
 
     model = train_function_approximator(x_T_reg, y_T_reg, n_epochs, batch_size, loss)
     model.save(models_directory + 'Q' + str(timeslot) + '_approximated_function.h5')
