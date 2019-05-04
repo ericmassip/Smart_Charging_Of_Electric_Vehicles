@@ -48,21 +48,19 @@ def get_BAU_cost(i_day, sessions_of_the_day):
 
 
 def get_action_with_minimum_q_value(timeslot, Xs):
-    next_timeslot = timeslot + 1
     possible_actions = get_possible_actions(Xs)
     model = approximated_functions.get(timeslot)
 
     q_values_for_possible_actions = {}
     for action in possible_actions:
-        resulting_Xs = get_resulting_Xs_matrix(Xs, action)
-        q_value = predict(next_timeslot, resulting_Xs, action, model)
+        q_value = predict(timeslot, Xs, action, model)
         q_values_for_possible_actions.update({action: q_value[0][0]})
 
     return min(q_values_for_possible_actions, key=q_values_for_possible_actions.get)
 
 
-def predict(next_timeslot, resulting_Xs, action, previous_Q_approximated_function):
-    input_value = np.array([next_timeslot, *resulting_Xs.flatten(), *action])
+def predict(timeslot, Xs, action, previous_Q_approximated_function):
+    input_value = np.array([timeslot, *Xs.flatten(), *action])
     return previous_Q_approximated_function.predict(np.reshape(input_value, (1, len(input_value))))
 
 
@@ -85,7 +83,7 @@ def get_policy_cost(i_day, sessions_of_the_day):
 
     return policy_cost_day
 
-n_epochs = 35
+n_epochs = 70
 batch_size = 64
 loss = 'huber'
 samples = 5000

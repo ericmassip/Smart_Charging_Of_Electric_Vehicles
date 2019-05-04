@@ -47,23 +47,20 @@ def get_BAU_cost(i_day, sessions_of_the_day):
     return BAU_cost_day
 
 
-def get_action_with_minimum_q_value(i_day, timeslot, Xs):
-    next_timeslot = timeslot + 1
+def get_action_with_minimum_q_value(timeslot, Xs, pv_energy_generated):
     possible_actions = get_possible_actions(Xs)
     model = approximated_functions.get(timeslot)
 
     q_values_for_possible_actions = {}
     for action in possible_actions:
-        resulting_Xs = get_resulting_Xs_matrix(Xs, action)
-        q_value = predict(i_day, next_timeslot, resulting_Xs, action, model)
+        q_value = predict(timeslot, pv_energy_generated, Xs, action, model)
         q_values_for_possible_actions.update({action: q_value[0][0]})
 
     return min(q_values_for_possible_actions, key=q_values_for_possible_actions.get)
 
 
-def predict(i_day, next_timeslot, resulting_Xs, action, previous_Q_approximated_function):
-    next_pv_energy_generated = 0 if next_timeslot > Smax else pv_per_timeslot_dict[i_day][next_timeslot]
-    input_value = np.array([next_timeslot, next_pv_energy_generated, *resulting_Xs.flatten(), *action])
+def predict(timeslot, pv_energy_generated, Xs, action, previous_Q_approximated_function):
+    input_value = np.array([timeslot, pv_energy_generated, *Xs.flatten(), *action])
     return previous_Q_approximated_function.predict(np.reshape(input_value, (1, len(input_value))))
 
 
@@ -77,10 +74,10 @@ def get_policy_cost(i_day, sessions_of_the_day):
     for timeslot in range(1, Smax + 1):
         Xs = add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions)
 
-        policy_action = get_action_with_minimum_q_value(i_day, timeslot, Xs)
+        pv_energy_generated = pv_per_timeslot_dict[i_day][timeslot]
+        policy_action = get_action_with_minimum_q_value(timeslot, Xs, pv_energy_generated)
         resulting_Xs = get_resulting_Xs_matrix(Xs, policy_action)
 
-        pv_energy_generated = pv_per_timeslot_dict[i_day][timeslot]
         policy_cost_day += get_cost(Xs, resulting_Xs, policy_action, pv_energy_generated)
         Xs = resulting_Xs.copy()
 
@@ -90,7 +87,8 @@ n_epochs = 35
 batch_size = 64
 loss = 'huber'
 samples = '5000'
-models_directory = '../../../models/PV/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+#models_directory = '../../../models/PV/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
+models_directory = '../../../experiments/PV/PV_samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '_loss_' + loss + '/'
 
 # Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
 # If you prefer to keep all the run results on the log file, remove filemode='w'
@@ -182,7 +180,7 @@ draws = 0
 
 for i_day in range(len(test_day_trajectories)):
 #for i_day in [10, 14, 15, 16]:
-#for i_day in [14]:
+#for i_day in [15]:
     day_sessions = test_day_sessions[i_day]
     day_trajectories = test_day_trajectories[i_day]
 
