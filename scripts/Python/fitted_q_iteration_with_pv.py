@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import pickle
+import random
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -40,7 +41,7 @@ def split_T_reg(F, previous_Q_approximated_function):
         if s_a_tuple.timeslot != 1:
             q_value_of_current_state += calculate_q_value(s_a_tuple, previous_Q_approximated_function)
 
-        x.append([s_a_tuple.timeslot, s_a_tuple.pv, *s_a_tuple.Xs.flatten(), *s_a_tuple.us])
+        x.append([s_a_tuple.pv, *s_a_tuple.us, *s_a_tuple.Xs.flatten()])
         y.append(q_value_of_current_state)
 
         if i % 10000 == 0:
@@ -57,7 +58,7 @@ def calculate_q_value(s_a_tuple, previous_Q_approximated_function):
 
 
 def predict(s_a_tuple, action, previous_Q_approximated_function):
-    predict_me_sth = np.array([s_a_tuple.next_timeslot, s_a_tuple.next_pv, *s_a_tuple.resulting_Xs.flatten(), *action])
+    predict_me_sth = np.array([s_a_tuple.next_pv, *action, *s_a_tuple.resulting_Xs.flatten()])
     return previous_Q_approximated_function.predict(np.reshape(predict_me_sth, (1, len(predict_me_sth))))
 
 
@@ -76,17 +77,17 @@ def train_function_approximator(x, y, n_epochs, batch_size, loss):
 
 
 # Input vector size is a 2-D vector of (Smax, Smax) flattened,
-# plus a vector of size Smax plus 1 for the timeslot and plus 1 for the pv
-input_vector_size = Smax**2 + Smax + 1 + 1
+# plus a vector of size Smax and plus 1 for the pv
+input_vector_size = Smax**2 + Smax + 1
 
 n_epochs = 1
 batch_size = 64
 loss = 'huber'
 samples = '5000'
 
-day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
+#day_trajectories = sorted(glob.glob("/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/" + str(samples) + "/*.json"))
 #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
-#day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
+day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
 
 train_day_trajectories = []
 for i in range(len(day_trajectories)):
@@ -112,6 +113,7 @@ for timeslot in range(1, Smax + 1):
     print('Iteration for timeslot ' + str(timeslot))
 
     state_action_tuples = [x for x in train_F if x.timeslot == timeslot]
+    random.shuffle(state_action_tuples)
     x_T_reg, y_T_reg = split_T_reg(state_action_tuples, previous_Q_approximated_function)
 
     model = train_function_approximator(x_T_reg, y_T_reg, n_epochs, batch_size, loss)
@@ -123,7 +125,7 @@ for timeslot in range(1, Smax + 1):
 for timeslot in range(1, Smax + 1):
     state_action_tuples = [x for x in train_F if x.timeslot == timeslot]
     s_a_tuple = state_action_tuples[0]
-    predict_me_sth = np.array(np.array([s_a_tuple.next_timeslot, s_a_tuple.next_pv, *s_a_tuple.Xs.flatten(), *s_a_tuple.us]))
+    predict_me_sth = np.array(np.array([s_a_tuple.next_pv, *s_a_tuple.us, *s_a_tuple.Xs.flatten()]))
 
     model = load_model(models_directory + 'Q' + str(timeslot) + '_approximated_function.h5')
     result = model.predict(np.reshape(predict_me_sth, (1, len(predict_me_sth))))
