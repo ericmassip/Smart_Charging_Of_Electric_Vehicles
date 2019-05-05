@@ -1,10 +1,10 @@
 import pandas as pd
 import azure_db_service
 import datetime
-from session_helper import Hmax
+import os
+import click
 
-historical_transactions = azure_db_service.get_data_from_historical_transactions()
-clean_historical_transactions = historical_transactions[['idTag', 'startTime', 'stopTime']]
+from session_helper import Hmax
 
 
 # The pure version of get_max_charging_timestamp sends back the charging times without tweeks
@@ -43,30 +43,55 @@ def get_connection_time(start_time, end_time):
     return (end_time - start_time).seconds / 3600
 
 
-transactions_cleaned = []
+@click.command()
+@click.option(
+    '--filter_query',
+    type=click.STRING,
+    required=True,
+    help='Azure DB query to extract records from the HistoricalTransactions table.'
+)
+@click.option(
+    '--ht_path',
+    type=click.STRING,
+    required=True,
+    help='Path to the directory where the historical transactions will be saved.'
+)
+def extract_transactions(filter_query, ht_path):
+    historical_transactions = azure_db_service.get_data_from_historical_transactions(filter_query)
+    clean_historical_transactions = historical_transactions[['idTag', 'startTime', 'stopTime']]
 
-for i in range(len(clean_historical_transactions)):
-    transactionId = clean_historical_transactions.index[i]
-    started = pd.to_datetime(clean_historical_transactions.iat[i, 1])
-    ended = pd.to_datetime(clean_historical_transactions.iat[i, 2])
-    connected_time = round(get_connection_time(started, ended), 2)
+    transactions_cleaned = []
 
-    # We prune the transactions longer than Hmax, because we consider transactions longer than one working day
-    # as outliers. Similarly, we prune transactions shorter than half an hour, cuz they are usually used for testing
-    # purposes.
-    if 0.5 < connected_time < Hmax and \
-            started.year == ended.year and \
-            started.month == ended.month and \
-            started.day == ended.day:
+    for i in range(len(clean_historical_transactions)):
+        transactionId = clean_historical_transactions.index[i]
+        started = pd.to_datetime(clean_historical_transactions.iat[i, 1])
+        ended = pd.to_datetime(clean_historical_transactions.iat[i, 2])
+        connected_time = round(get_connection_time(started, ended), 2)
 
-        charge_time = round(get_charging_time(transactionId), 2)
-        idTag = clean_historical_transactions.iat[i, 0]
+        # We prune the transactions longer than Hmax, because we consider transactions longer than one working day as outliers.
+        # Similarly, we prune transactions shorter than half an hour, cuz they are usually used for testing purposes.
+        if 0.5 < connected_time < Hmax and \
+                started.year == ended.year and \
+                started.month == ended.month and \
+                started.day == ended.day:
 
-        transactions_cleaned.append(
-            {'transactionId': transactionId, 'Started': started, 'Ended': ended, 'ConnectedTime': connected_time,
-             'ChargeTime': charge_time, 'idTag': idTag})
+            charge_time = round(get_charging_time(transactionId), 2)
+            idTag = clean_historical_transactions.iat[i, 0]
 
-    print('Transaction: ' + str(i))
+            transactions_cleaned.append(
+                {'transactionId': transactionId, 'Started': started, 'Ended': ended, 'ConnectedTime': connected_time,
+                 'ChargeTime': charge_time, 'idTag': idTag})
 
-df = pd.DataFrame(transactions_cleaned)
-df.to_csv('historical_transactions_' + str(datetime.date.today()) + '.csv')
+        print('Transaction: ' + str(i))
+
+    df = pd.DataFrame(transactions_cleaned)
+
+    historical_transactions_directory = ht_path
+    if not os.path.exists(historical_transactions_directory):
+        os.makedirs(historical_transactions_directory)
+
+    df.to_csv(historical_transactions_directory + 'historical_transactions_' + str(datetime.date.today()) + '.csv')
+
+
+if __name__ == '__main__':
+    extract_transactions()

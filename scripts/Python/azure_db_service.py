@@ -26,8 +26,7 @@ def query_azure_db(filterQuery, selectQuery, tableName, rowKeyColumnName):
     return df
 
 
-def get_data_from_historical_transactions():
-    filterQuery = "deployment eq 'production' and stopTime ne '' and chg3phase ne '' and maxPowerDetermined eq true  and chargingStationId ne 'BLUEC3' and PartitionKey ne '1970-01-01' and PartitionKey ne '2019-04-25'"
+def get_data_from_historical_transactions(filterQuery):
     selectQuery = 'RowKey, chargingStationId, chg3phase, connectorId, idTag, energy, finished, lastSeen, curPower, maxPowerSeen, meterStart, meterStop, startTime, stopTime'
     tableName = "HistoricalTransactions"
     rowKeyColumnName = "transactionId"
