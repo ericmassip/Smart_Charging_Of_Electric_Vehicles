@@ -76,7 +76,20 @@ def get_total_power_consumption(dates, power_consumptions):
     return total_power_consumption
 
 
-def extract_pv():
+@click.command()
+@click.option(
+    '--sessions',
+    type=click.STRING,
+    required=True,
+    help='Sessions file to be used.'
+)
+@click.option(
+    '--tpc_path',
+    type=click.STRING,
+    required=True,
+    help='Path to the directory where the total power consumption will be saved.'
+)
+def extract_pv(sessions, tpc_path):
     start_day = date(2018, 8, 7)
     end_day = date(2018, 8, 9)
 
@@ -84,7 +97,7 @@ def extract_pv():
 
     days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
 
-    sessions_filename = '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv'
+    sessions_filename = sessions
     sessions = pd.read_csv(sessions_filename, index_col='Started')
     df = sessions
     df.index = pd.to_datetime(df.index)
@@ -108,7 +121,7 @@ def extract_pv():
 
     df = pd.DataFrame(total_power_consumption)
 
-    total_power_consumption_directory = '../../../datasets/PV/'
+    total_power_consumption_directory = tpc_path
     if not os.path.exists(total_power_consumption_directory):
         os.makedirs(total_power_consumption_directory)
 
