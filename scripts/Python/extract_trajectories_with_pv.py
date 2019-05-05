@@ -1,27 +1,14 @@
 import json
 from datetime import date, timedelta, datetime
 import random
+import os
+import click
 
 from session_helper import *
 from trajectory_helper import StateActionTuple, get_organized_trajectories
 
-start_day = date(2018, 8, 7)
-end_day = date(2019, 5, 1)
 
-delta = end_day - start_day
-timedelta_1_day = timedelta(days=1)
-
-days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
-
-sessions_to_be_checked = []
-sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv', index_col='Started')
-df = sessions
-df.index = pd.to_datetime(df.index)
-
-pv_generated_data = pd.read_csv('~/Projects/MAI/Thesis/datasets/PV/total_power_consumption.csv')
-
-
-def get_pv_generated_that_day(day):
+def get_pv_generated_that_day(pv_generated_data, day):
     timedelta_15 = timedelta(minutes=15)
 
     start_time = datetime(day.year, day.month, day.day, start_hour, 0, 0)
@@ -47,21 +34,7 @@ def get_pv_generated_that_day(day):
     return pv_per_timeslot
 
 
-pv_per_timeslot_dict = []
-
-for day in days_to_be_checked:
-    sessions_of_a_day = df[df.index.dayofyear == pd.Timestamp(day).dayofyear]
-
-    if not sessions_of_a_day.empty:
-        sessions_to_be_checked.append(sessions_of_a_day)
-
-        pv_in_that_day = get_pv_generated_that_day(day)
-        pv_per_timeslot_dict.append(pv_in_that_day)
-
-print('There are ' + str(len(sessions_to_be_checked)) + ' days with transactions available.')
-
-
-def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactions, state_action_tuples):
+def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactions, state_action_tuples, pv_per_timeslot_dict):
     next_timeslot = timeslot + 1
 
     resulting_Xs = get_resulting_Xs_matrix(Xs, previous_action)
@@ -81,10 +54,8 @@ def save_state_action_tuple(i_day, timeslot, Xs, previous_action, day_transactio
 
         Us = get_possible_actions(resulting_Xs)
 
-        # print(Us)
-
         for next_action in Us:
-            save_state_action_tuple(i_day, next_timeslot, resulting_Xs, next_action, day_transactions, state_action_tuples)
+            save_state_action_tuple(i_day, next_timeslot, resulting_Xs, next_action, day_transactions, state_action_tuples, pv_per_timeslot_dict)
 
 
 def filter_state_action_tuples(organized_trajectories, top_sampling_trajectories):
@@ -108,7 +79,7 @@ def filter_state_action_tuples(organized_trajectories, top_sampling_trajectories
     return state_action_tuples
 
 
-def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajectories):
+def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajectories, pv_per_timeslot_dict, trajectories_directory):
     day = sessions_of_the_day.index[0].strftime('%Y-%m-%d')
     day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
 
@@ -128,7 +99,7 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
 
     # Iterate over the possible actions in Us
     for action in Us:
-        save_state_action_tuple(i_day, timeslot, Xs, action, day_transactions, state_action_tuples)
+        save_state_action_tuple(i_day, timeslot, Xs, action, day_transactions, state_action_tuples, pv_per_timeslot_dict)
 
     state_action_tuples_to_be_filtered = [StateActionTuple(state_action) for state_action in state_action_tuples]
     organized_trajectories = get_organized_trajectories(state_action_tuples_to_be_filtered)
@@ -141,18 +112,84 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
     print('Reduced number of trajectories = ' + str(len(organized_trajectories)))
 
     json_dump = json.dumps({'trajectories': state_action_tuples})
-    f = open('../../../datasets/Trajectories/' + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
+
+    if not os.path.exists(trajectories_directory):
+        os.makedirs(trajectories_directory)
+
+    f = open(trajectories_directory + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
     f.write(json_dump)
     f.close()
 
     print('Day processed: ' + day)
 
 
-#save_json_day_trajectories(sessions_to_be_checked[0])
+@click.command()
+@click.option(
+    '--sessions',
+    type=click.STRING,
+    required=True,
+    help='Sessions file with the historical transactions to be used.'
+)
+@click.option(
+    '--tpc_file',
+    type=click.STRING,
+    required=True,
+    help='Path to the file where the total power consumption is saved.'
+)
+@click.option(
+    '--trajectories_path',
+    type=click.STRING,
+    required=True,
+    help='Path to the file where the trajectories will be saved.'
+)
+@click.option(
+    '--tst',
+    type=click.STRING,
+    default='all',
+    required=False,
+    help="Top sampling trajectories: Specify a value for the amount of random trajectories to be extracted. Say 'all' "
+         "to extract all the possible trajectories of the decision tree, or a number like 5000 or 10000 or 15000."
+)
+def extract_trajectories(sessions, tpc_file, trajectories_path, tst):
+    start_day = date(2018, 8, 1)
+    end_day = date(2019, 8, 1)
 
-top_sampling_trajectories = 'all'
+    delta = end_day - start_day
 
-for i_day in range(len(sessions_to_be_checked)):
-#for i_day in [85]:
-    sessions_of_the_day = sessions_to_be_checked[i_day]
-    save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajectories)
+    days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
+
+    sessions_to_be_checked = []
+    #sessions_filename = '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv'
+    sessions_filename = sessions
+    sessions = pd.read_csv(sessions_filename, index_col='Started')
+    df = sessions
+    df.index = pd.to_datetime(df.index)
+
+    #tpc_file = '~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv'
+    pv_generated_data = pd.read_csv(tpc_file)
+
+    pv_per_timeslot_dict = []
+
+    for day in days_to_be_checked:
+        sessions_of_a_day = df[df.index.dayofyear == pd.Timestamp(day).dayofyear]
+
+        if not sessions_of_a_day.empty:
+            sessions_to_be_checked.append(sessions_of_a_day)
+
+            pv_in_that_day = get_pv_generated_that_day(pv_generated_data, day)
+            pv_per_timeslot_dict.append(pv_in_that_day)
+
+    print('There are ' + str(len(sessions_to_be_checked)) + ' days with transactions available.')
+
+    #trajectories_directory = '../../../datasets/Trajectories/'
+    trajectories_directory = trajectories_path
+    #top_sampling_trajectories = 'all'
+    top_sampling_trajectories = tst
+
+    for i_day in range(len(sessions_to_be_checked)):
+        sessions_of_the_day = sessions_to_be_checked[i_day]
+        save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajectories, pv_per_timeslot_dict, trajectories_directory)
+
+
+if __name__ == '__main__':
+    extract_trajectories()

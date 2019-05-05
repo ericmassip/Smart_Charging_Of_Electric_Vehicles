@@ -81,7 +81,7 @@ def get_total_power_consumption(dates, power_consumptions):
     '--sessions',
     type=click.STRING,
     required=True,
-    help='Sessions file to be used.'
+    help='Sessions file with the historical transactions to be used.'
 )
 @click.option(
     '--tpc_path',
@@ -90,8 +90,8 @@ def get_total_power_consumption(dates, power_consumptions):
     help='Path to the directory where the total power consumption will be saved.'
 )
 def extract_pv(sessions, tpc_path):
-    start_day = date(2018, 8, 7)
-    end_day = date(2018, 8, 9)
+    start_day = date(2018, 8, 1)
+    end_day = date(2019, 8, 1)
 
     delta = end_day - start_day
 
