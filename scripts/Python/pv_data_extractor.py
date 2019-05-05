@@ -5,46 +5,22 @@ import datetime
 from datetime import date, timedelta
 from datetime import datetime
 import json
+import os
+import click
 
 import azure_db_credentials
+
+DATE_FORMAT_STR = "%Y-%m-%d"
 
 URL = 'https://st-dev-data-api.azurewebsites.net'
 invertersURL = urllib.parse.urljoin(URL, '/api/v0.1/buildings/energyville1/pv/roof/inverters/')
 powerURL = urllib.parse.urljoin(URL, '/api/v0.1/buildings/energyville1/pv/roof/power/')
 
-storage_account_name = azure_db_credentials.smarthor_user
-sas_token = azure_db_credentials.smarthor_password
-
-DATE_FORMAT_STR = "%Y-%m-%d"
-
-start_day = date(2018, 7, 1)
-end_day = date(2019, 5, 1)
-
-delta = end_day - start_day
-timedelta_1_day = timedelta(days=1)
-
-days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
-
-sessions_to_be_checked = []
-sessions = pd.read_csv('~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv', index_col='Started')
-df = sessions
-df.index = pd.to_datetime(df.index)
-
-days_to_be_checked_2 = []
-
-for day in days_to_be_checked:
-    sessions_of_a_day = df[df.index.dayofyear == pd.Timestamp(day).dayofyear]
-
-    if not sessions_of_a_day.empty:
-        days_to_be_checked_2.append(pd.Timestamp(day)._date_repr)
-
-print('There are ' + str(len(days_to_be_checked_2)) + ' days to be checked.')
-
-start_time = datetime.strptime(days_to_be_checked_2[0], DATE_FORMAT_STR)
-end_time = datetime.strptime(days_to_be_checked_2[-1:][0], DATE_FORMAT_STR)
+user = azure_db_credentials.smarthor_user
+pswd = azure_db_credentials.smarthor_password
 
 
-def get_time_dictionary_every_15min(start_time, end_time):
+def get_time_dictionary_every_15min(days_to_be_checked_2):
     timedelta_15 = timedelta(minutes=15)
 
     dates = []
@@ -56,9 +32,6 @@ def get_time_dictionary_every_15min(start_time, end_time):
             date = date + timedelta_15
 
     return dates
-
-
-dates = get_time_dictionary_every_15min(start_time, end_time)
 
 
 def get_inverter_ids():
@@ -84,10 +57,7 @@ def get_power_consumptions(start, end):
     return [get_power_consumption(inverter_id, start, end) for inverter_id in get_inverter_ids()]
 
 
-power_consumptions = get_power_consumptions(start_time, end_time)
-
-
-def get_total_power_consumption():
+def get_total_power_consumption(dates, power_consumptions):
     total_power_consumption = []
     for date_to_be_checked in dates:
         date_to_be_checked_str = date_to_be_checked.strftime("%Y-%m-%d %H:%M:%S")
@@ -106,8 +76,44 @@ def get_total_power_consumption():
     return total_power_consumption
 
 
-total_power_consumption = get_total_power_consumption()
+def extract_pv():
+    start_day = date(2018, 8, 7)
+    end_day = date(2018, 8, 9)
 
-df = pd.DataFrame(total_power_consumption)
+    delta = end_day - start_day
 
-df.to_csv('../../../datasets/PV/total_power_consumption.csv')
+    days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
+
+    sessions_filename = '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-04-25.csv'
+    sessions = pd.read_csv(sessions_filename, index_col='Started')
+    df = sessions
+    df.index = pd.to_datetime(df.index)
+
+    days_to_be_checked_2 = []
+
+    for day in days_to_be_checked:
+        sessions_of_a_day = df[df.index.dayofyear == pd.Timestamp(day).dayofyear]
+
+        if not sessions_of_a_day.empty:
+            days_to_be_checked_2.append(pd.Timestamp(day)._date_repr)
+
+    print('There are ' + str(len(days_to_be_checked_2)) + ' days to be checked.')
+
+    start_time = datetime.strptime(days_to_be_checked_2[0], DATE_FORMAT_STR)
+    end_time = datetime.strptime(days_to_be_checked_2[-1:][0], DATE_FORMAT_STR) + timedelta(days=1)
+
+    dates = get_time_dictionary_every_15min(days_to_be_checked_2)
+    power_consumptions = get_power_consumptions(start_time, end_time)
+    total_power_consumption = get_total_power_consumption(dates, power_consumptions)
+
+    df = pd.DataFrame(total_power_consumption)
+
+    total_power_consumption_directory = '../../../datasets/PV/'
+    if not os.path.exists(total_power_consumption_directory):
+        os.makedirs(total_power_consumption_directory)
+
+    df.to_csv(total_power_consumption_directory + 'total_power_consumption_' + sessions_filename.split("_")[-1].split(".")[0] + '.csv')
+
+
+if __name__ == '__main__':
+    extract_pv()
