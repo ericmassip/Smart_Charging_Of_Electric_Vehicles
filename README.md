@@ -83,12 +83,52 @@ The command above generates files like **trajectories_2018-08-08.json** in the d
 
 
 
-
 ## Training the network
 
-There are 2 algorithms that can be used for the training:
+There are 2 algorithms that can be used for training the network:
 * FQI: Available using the file **fitted_q_iteration.py**.
 * FQI Reverse: Available using the file **fitted_q_iteration_reverse.py**.
 For more information about how these algorithms work, have a look at my thesis text.
 
-Both files have the same inputs, outputs and arguments so I'll describe them as if they were equal.
+Both files share most of the inputs, outputs and arguments so I'll describe their variables as if they were the same. Unique variables for one of the files will be mentioned clearly.
+
+* *--n_epochs* (required): Number of epochs for the training of the neural network.
+* *--batch_size* (required): Batch size for the training of the neural network.
+* *--samples* (required): This parameter refers to the 'top sampling trajectories' used in the extraction of the trajectories.
+* *--trajectories_path* (required): Path to the file where the trajectories are saved.
+* *--models_directory* (required): Path to the directory where the models will be saved.
+* *--baseline/--pv* (required): Whether you want to train the Baseline network without PV data as input or the PV network with PV data as input.
+* *--iterations* (only available in *fitted_q_iteration.py*): Number of iterations to run the FQI algorithm.
+
+Example:
+```console
+python fitted_q_iteration.py --n_epochs 25 --batch_size 64 --samples 5000 --trajectories_path /Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/ --models_directory '../../../models/ --baseline --iterations 1
+```
+The command above generates files like **Q1_approximated_function.h5** in the directory *~/Projects/MAI/Thesis/models/Baseline/samples_5000_n_epochs_25_batch_size_64*. If instead of setting *--baseline* you set *--pv*, the directory would be *~/Projects/MAI/Thesis/models/PV/samples_5000_n_epochs_25_batch_size_64*.
+
+WARNING: *Be careful setting the parameters and choosing the algorithm to train your models. If you train a model with the file for FQI and then train another model with exactly the same parameters but with the file for FQI Reverse, the new generated models will overwrite the previous one, so make sure you save the previous ones in a different location (for example setting a different location in the **models_directory** argument).*
+
+
+
+## Evaluating the performance of the network
+
+As you have seen during the previous sections, there's a wide variety of possibilities in terms of parameters to train different models, as well as 2 algorithms. Evaluating the performance of each of them has been condensed on the file **evaluation_function.py**.
+
+The only output file generated is called *evaluation_function.log* and it is saved automatically inside the model folder being evaluated. That file has information about the relative error of the BAU (Business As Usual) case and the FTLP (Following The Learned Policy) case in comparison to the Optimal case. It also includes the accumulated cost of the trajectory following the BAU, the FTLP and the Optimal case. In addition, it provides information about how many times the BAU and the FTLP 'win' over each other. 'Winning' means 'Having a lower accumulated cost' than the other case. Very similarly to the training files, this file has a lot of input parameters that are described below. 
+
+* *--n_epochs* (required): Number of epochs for the training of the neural network.
+* *--batch_size* (required): Batch size for the training of the neural network.
+* *--samples* (required): This parameter refers to the 'top sampling trajectories' used in the extraction of the trajectories.
+* *--sessions* (required): Csv file with the historical transactions to be used.
+* *--tpc_file* (required): Path to the file where the total power consumption is saved.
+* *--trajectories_path* (required): Path to the file where the trajectories are saved.
+* *--models_directory* (required): Path to the directory where the models will be saved.
+* *--baseline/--pv* (required): Whether you want to train the Baseline network without PV data as input or the PV network with PV data as input.
+
+Example:
+```console
+python evaluation_function.py --n_epochs 25 --batch_size 64 --samples 5000 --sessions ~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv --tpc_file ~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv --trajectories_path ../../../datasets/Trajectories/ --models_directory ../../../models/ --pv 
+```
+The command above generates a file called **evaluation_function.log** inside the directory *~/Projects/MAI/Thesis/models/Baseline/samples_5000_n_epochs_25_batch_size_64*.
+
+WARNING: *In order to run this script, there must be a folder called **all** inside the **trajectories_path** containing all the possible trajectories extracted (not a random number using the top sampling trajectories) from the input sessions. These trajectories are essential in order to find the accumulated cost of the optimal trajectory and compute the relative errors.*

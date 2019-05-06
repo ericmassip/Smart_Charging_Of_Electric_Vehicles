@@ -113,10 +113,7 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
 
     json_dump = json.dumps({'trajectories': state_action_tuples})
 
-    if not os.path.exists(trajectories_directory):
-        os.makedirs(trajectories_directory)
-
-    f = open(trajectories_directory + str(top_sampling_trajectories) + '/trajectories_' + day + '.json', "w")
+    f = open(trajectories_directory + '/trajectories_' + day + '.json', "w")
     f.write(json_dump)
     f.close()
 
@@ -147,8 +144,8 @@ def save_json_day_trajectories(i_day, sessions_of_the_day, top_sampling_trajecto
     type=click.STRING,
     default='all',
     required=False,
-    help="Top sampling trajectories: Specify a value for the amount of random trajectories to be extracted. Say 'all' "
-         "to extract all the possible trajectories of the decision tree, or a number like 5000 or 10000 or 15000."
+    help="Top sampling trajectories: Specify a value like 5000 or 10000 or 15000 for the amount of random trajectories "
+         "to be extracted. If not specified, all the possible trajectories of the decision tree will be extracted."
 )
 def extract_trajectories(sessions, tpc_file, trajectories_path, tst):
     start_day = date(2018, 8, 1)
@@ -159,13 +156,11 @@ def extract_trajectories(sessions, tpc_file, trajectories_path, tst):
     days_to_be_checked = [start_day + timedelta(i) for i in range(delta.days)]
 
     sessions_to_be_checked = []
-    #sessions_filename = '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv'
     sessions_filename = sessions
     sessions = pd.read_csv(sessions_filename, index_col='Started')
     df = sessions
     df.index = pd.to_datetime(df.index)
 
-    #tpc_file = '~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv'
     pv_generated_data = pd.read_csv(tpc_file)
 
     pv_per_timeslot_dict = []
@@ -181,10 +176,11 @@ def extract_trajectories(sessions, tpc_file, trajectories_path, tst):
 
     print('There are ' + str(len(sessions_to_be_checked)) + ' days with transactions available.')
 
-    #trajectories_directory = '../../../datasets/Trajectories/'
-    trajectories_directory = trajectories_path
-    #top_sampling_trajectories = 'all'
     top_sampling_trajectories = tst
+
+    trajectories_directory = trajectories_path + str(top_sampling_trajectories) + '/'
+    if not os.path.exists(trajectories_directory):
+        os.makedirs(trajectories_directory)
 
     for i_day in range(len(sessions_to_be_checked)):
         sessions_of_the_day = sessions_to_be_checked[i_day]
