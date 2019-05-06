@@ -83,7 +83,7 @@ The command above generates files like **trajectories_2018-08-08.json** in the d
 
 
 
-## Training the network
+## Train the network
 
 There are 2 algorithms that can be used for training the network:
 * FQI: Available using the file **fitted_q_iteration.py**.
@@ -110,7 +110,7 @@ WARNING: *Be careful setting the parameters and choosing the algorithm to train 
 
 
 
-## Evaluating the performance of the network
+## Evaluate the performance of the network
 
 As you have seen during the previous sections, there's a wide variety of possibilities in terms of parameters to train different models, as well as 2 algorithms. Evaluating the performance of each of them has been condensed on the file **evaluation_function.py**.
 
