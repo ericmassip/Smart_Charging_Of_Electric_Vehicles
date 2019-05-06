@@ -1,4 +1,4 @@
-# Smart_Charging_Of_Electric_Vehicles
+# Smart Charging Of_Electric Vehicles
 
 Eric Massip - Master's in Artificial Intelligence student of the KU Leuven
 
