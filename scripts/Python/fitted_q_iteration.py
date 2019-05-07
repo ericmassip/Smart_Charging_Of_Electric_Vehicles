@@ -1,6 +1,5 @@
 import glob
 import os
-import pickle
 import click
 
 from session_helper import Smax
@@ -59,9 +58,6 @@ def train_fqi(n_epochs, batch_size, samples, iterations, trajectories_path, mode
         network = 'PV'
 
     day_trajectories = sorted(glob.glob(trajectories_path + str(samples) + "/*.json"))
-    # day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json", "/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-30.json"]
-    #day_trajectories = ["/Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/5000/trajectories_2018-10-31.json"]
-    #day_trajectories = [trajectories_path + str(samples) + "/trajectories_2018-10-31.json"]
 
     train_day_trajectories = []
     for i in range(len(day_trajectories)):
@@ -69,13 +65,10 @@ def train_fqi(n_epochs, batch_size, samples, iterations, trajectories_path, mode
             train_day_trajectories.append(day_trajectories[i])
 
     train_F = preprocess_trajectories(train_day_trajectories)
-    # pickle.dump(train_F, open('train_F_' + str(samples) + '.p', 'wb'))
-
-    # train_F = pickle.load(open('train_F_' + str(samples) + '.p', mode='rb'))
 
     print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
-    models_directory = models_directory + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
+    models_directory = models_directory + 'fqi/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
     if not os.path.exists(models_directory):
         os.makedirs(models_directory)
 

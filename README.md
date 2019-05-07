@@ -1,4 +1,4 @@
-# Smart_Charging_Of_Electric_Vehicles
+# Smart Charging Of_Electric Vehicles
 
 Eric Massip - Master's in Artificial Intelligence student of the KU Leuven
 
@@ -37,7 +37,7 @@ The file **extract_historical_transactions.py** is the one in charge of extracti
 
 Example:
 ```console
-python extract_historical_transactions.py --filter_query "deployment eq 'production' and stopTime ne '' and chg3phase ne '' and maxPowerDetermined eq true and chargingStationId ne 'BLUEC3' and PartitionKey ne '1970-01-01'" --ht_path '../../../datasets/Transactions/'
+python extract_historical_transactions.py --filter_query "deployment eq 'production' and stopTime ne '' and chg3phase ne '' and maxPowerDetermined eq true and chargingStationId ne 'BLUEC3' and PartitionKey ne '1970-01-01'" --ht_path ../../../datasets/Transactions/
 ```
 The command above generates the file **historical_transactions_2019-05-05.csv** in the directory *~/Projects/MAI/Thesis/datasets/Transactions/*.
 
@@ -56,7 +56,7 @@ The file **pv_data_extractor.py** is the one in charge of extracting this PV dat
 
 Example:
 ```console
-python pv_data_extractor.py --sessions '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv' --tpc_path '../../../datasets/PV/'
+python pv_data_extractor.py --sessions ~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv --tpc_path ../../../datasets/PV/
 ```
 The command above generates the file **total_power_consumption_2019-05-05.csv** in the directory *~/Projects/MAI/Thesis/datasets/PV/*.
 
@@ -77,13 +77,13 @@ The file **extract_trajectories.py** is in charge of extracting these trajectori
 
 Example:
 ```console
-python extract_trajectories.py --sessions '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv' --tpc_file '~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv' --trajectories_path '../../../datasets/Trajectories/' --tst 5000
+python extract_trajectories.py --sessions ~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv --tpc_file ~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv --trajectories_path ../../../datasets/Trajectories/ --tst 5000
 ```
 The command above generates files like **trajectories_2018-08-08.json** in the directory *~/Projects/MAI/Thesis/datasets/Trajectories/5000/*.
 
 
 
-## Training the network
+## Train the network
 
 There are 2 algorithms that can be used for training the network:
 * FQI: Available using the file **fitted_q_iteration.py**.
@@ -102,7 +102,7 @@ Both files share most of the inputs, outputs and arguments so I'll describe thei
 
 Example:
 ```console
-python fitted_q_iteration.py --n_epochs 25 --batch_size 64 --samples 5000 --trajectories_path /Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/ --models_directory '../../../models/ --baseline --iterations 1
+python fitted_q_iteration.py --n_epochs 25 --batch_size 64 --samples 5000 --trajectories_path /Users/ericmassip/Projects/MAI/Thesis/datasets/Trajectories/ --models_directory ../../../models/ --baseline --iterations 1
 ```
 The command above generates files like **Q1_approximated_function.h5** in the directory *~/Projects/MAI/Thesis/models/Baseline/samples_5000_n_epochs_25_batch_size_64*. If instead of setting *--baseline* you set *--pv*, the directory would be *~/Projects/MAI/Thesis/models/PV/samples_5000_n_epochs_25_batch_size_64*.
 
@@ -110,9 +110,9 @@ WARNING: *Be careful setting the parameters and choosing the algorithm to train 
 
 
 
-## Evaluating the performance of the network
+## Evaluate the performance of the network
 
-As you have seen during the previous sections, there's a wide variety of possibilities in terms of parameters to train different models, as well as 2 algorithms. Evaluating the performance of each of them has been condensed on the file **evaluation_function.py**.
+As you have seen during the previous sections, there's a wide variety of possibilities in terms of parameters to train different models, as well as 2 algorithms. Evaluating the performance of each of the algorithms is possible with the files **evaluation_function_fqi.py** and **evaluation_function_fqi_reverse.py**.
 
 The only output file generated is called *evaluation_function.log* and it is saved automatically inside the model folder being evaluated. That file has information about the relative error of the BAU (Business As Usual) case and the FTLP (Following The Learned Policy) case in comparison to the Optimal case. It also includes the accumulated cost of the trajectory following the BAU, the FTLP and the Optimal case. In addition, it provides information about how many times the BAU and the FTLP 'win' over each other. 'Winning' means 'Having a lower accumulated cost' than the other case. Very similarly to the training files, this file has a lot of input parameters that are described below. 
 
@@ -124,11 +124,12 @@ The only output file generated is called *evaluation_function.log* and it is sav
 * *--trajectories_path* (required): Path to the file where the trajectories are saved.
 * *--models_directory* (required): Path to the directory where the models will be saved.
 * *--baseline/--pv* (required): Whether you want to train the Baseline network without PV data as input or the PV network with PV data as input.
+* *--iterations* (only available in *evaluation_function_fqi.py*): Number of iterations to run the FQI algorithm.
 
 Example:
 ```console
-python evaluation_function.py --n_epochs 25 --batch_size 64 --samples 5000 --sessions ~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv --tpc_file ~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv --trajectories_path ../../../datasets/Trajectories/ --models_directory ../../../models/ --pv 
+python evaluation_function_fqi.py --n_epochs 25 --batch_size 64 --samples 5000 --iterations 1 --sessions ~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-05.csv --tpc_file ~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv --trajectories_path ../../../datasets/Trajectories/ --models_directory ../../../models/ --pv 
 ```
-The command above generates a file called **evaluation_function.log** inside the directory *~/Projects/MAI/Thesis/models/Baseline/samples_5000_n_epochs_25_batch_size_64*.
+The command above generates a file called **evaluation_function.log** inside the directory *~/Projects/MAI/Thesis/models/fqi/Baseline/samples_5000_n_epochs_25_batch_size_64*.
 
 WARNING: *In order to run this script, there must be a folder called **all** inside the **trajectories_path** containing all the possible trajectories extracted (not a random number using the top sampling trajectories) from the input sessions. These trajectories are essential in order to find the accumulated cost of the optimal trajectory and compute the relative errors.*
