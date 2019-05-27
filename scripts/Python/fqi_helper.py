@@ -14,7 +14,7 @@ from session_helper import Nmax, get_possible_actions
 
 def preprocess_trajectories(day_trajectories):
     F = []
-    i = 0
+    counter = 0
     for day in day_trajectories:
         state_actions = json.loads(open(day).read())['trajectories']
         state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
@@ -42,9 +42,9 @@ def preprocess_trajectories(day_trajectories):
                 if not found:
                     F.append(elem)
 
-        if i % 5 == 0:
-            print('Preprocessed ' + str(i + 1) + ' days.')
-        i += 1
+        if counter % 5 == 0:
+            print('Preprocessed ' + str(counter + 1) + ' days.')
+        counter += 1
 
     return F
 
