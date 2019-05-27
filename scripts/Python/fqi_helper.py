@@ -47,7 +47,7 @@ def preprocess_trajectories(day_trajectories):
             print('Preprocessed ' + str(counter + 1) + ' days.')
         counter += 1
 
-    pickle.dump(F, open('F_with_uniques.p', 'wb'))
+    #pickle.dump(F, open('F_with_uniques.p', 'wb'))
     return F
 
 
