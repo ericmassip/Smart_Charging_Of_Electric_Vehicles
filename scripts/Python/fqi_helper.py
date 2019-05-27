@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import tensorflow as tf
+import pickle
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -46,6 +47,7 @@ def preprocess_trajectories(day_trajectories):
             print('Preprocessed ' + str(counter + 1) + ' days.')
         counter += 1
 
+    pickle.dump(F, open('F_with_uniques.p', 'wb'))
     return F
 
 
