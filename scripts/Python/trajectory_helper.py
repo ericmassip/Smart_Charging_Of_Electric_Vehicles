@@ -53,7 +53,9 @@ class StateActionTuple():
     def is_equal(self, state_action_tuple):
         return (self.timeslot == state_action_tuple.timeslot and
                 np.array_equal(self.Xs, state_action_tuple.Xs) and
-                self.us == state_action_tuple.us)
+                self.us == state_action_tuple.us and
+                self.pv == state_action_tuple.pv and
+                self.next_pv == state_action_tuple.next_pv)
 
 
 class Trajectory:
@@ -102,12 +104,24 @@ def show_organized_trajectories(organized_trajectories):
 
 
 def get_unique_state_action_tuples(state_action_tuples):
-    x = state_action_tuples.copy()
-    for i, a in enumerate(x):
-        if any(a.is_equal(b) for b in x[:i]):
-            x.remove(a)
+    unique_list = []
 
-    return x
+    for i in range(len(state_action_tuples)):
+        elem = state_action_tuples[i]
+        found = False
+        j = i
+        while not found and j < len(state_action_tuples):
+            elem2 = state_action_tuples[j]
+
+            if i != j and elem.is_equal(elem2):
+                found = True
+
+            j += 1
+
+        if not found:
+            unique_list.append(elem)
+
+    return unique_list
 
 
 def get_accumulated_cost(trajectory):
@@ -115,7 +129,7 @@ def get_accumulated_cost(trajectory):
                             acc + state_action_tuple.cost, trajectory, 0)
 
 
-#json_to_be_beautified = json.loads(open('../../../datasets/Trajectories/trajectories_2018-08-13.json').read())
+#json_to_be_beautified = json.loads(open('../../../datasets/Trajectories/all/trajectories_2018-08-18.json').read())
 #state_actions = json_to_be_beautified['trajectories']
 #state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
 
@@ -124,6 +138,9 @@ def get_accumulated_cost(trajectory):
 
 #unique_state_action_tuples = get_unique_state_action_tuples(state_action_tuples)
 #print('Unique state action tuples: ' + str(len(unique_state_action_tuples)))
+
+#for state_action_tuple in unique_state_action_tuples:
+#    show_state_action_tuple(state_action_tuple)
 
 #organized_trajectories = get_organized_trajectories(state_action_tuples)
 #print(organized_trajectories)

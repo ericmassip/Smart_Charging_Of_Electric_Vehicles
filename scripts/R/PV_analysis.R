@@ -70,12 +70,13 @@ PV_data_bp_Jan$date_hms <- hms::hms(second(PV_data_bp_Jan$date), minute(PV_data_
 PV_data_bp_Jan$date_hms <- as.POSIXct(PV_data_bp_Jan$date_hms)
 
 # PV_data density function not scaled
-ggplot(aes(x = date_hms, y = power_sum), data = PV_data_bp_spring) +
+ggplot(aes(x = date_hms, y = power_sum), data = PV_data_bp_autumn) +
   geom_point(aes(colour = factor(month))) +
   scale_x_datetime(breaks = date_breaks("1 hour"), labels=date_format("%H:%M")) +
   scale_y_continuous(breaks = c(0, 50000, 100000, 150000, 200000, 250000, 300000), limits = c(0,300000)) +
-  labs(title = "PV data Spring 2017") +
-  ylab("Power(W)")
+  labs(title = "PV data Autumn 2017") +
+  ylab("Power(W)") +
+  xlab("Hour of the day")
 
 #geom_bin2d
 #geom_count (similar to point but it's counting, not very useful I think)

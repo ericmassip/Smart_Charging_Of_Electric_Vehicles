@@ -8,7 +8,7 @@ from keras.layers import Dense
 import keras.losses
 keras.losses.huber_loss = tf.losses.huber_loss
 
-from trajectory_helper import StateActionTuple
+from trajectory_helper import StateActionTuple, get_unique_state_action_tuples
 from session_helper import Nmax, get_possible_actions
 
 
@@ -18,10 +18,34 @@ def preprocess_trajectories(day_trajectories):
     for day in day_trajectories:
         state_actions = json.loads(open(day).read())['trajectories']
         state_action_tuples = [StateActionTuple(state_action) for state_action in state_actions]
-        F.extend(state_action_tuples)
+
+        #for elem in state_action_tuples:
+        #    if elem not in F:
+        #        F.extend(state_action_tuples)
+
+        if not F:
+            F = get_unique_state_action_tuples(state_action_tuples)
+        else:
+            unique_state_action_tuples_to_be_added = get_unique_state_action_tuples(state_action_tuples)
+            for i in range(len(unique_state_action_tuples_to_be_added)):
+                elem = unique_state_action_tuples_to_be_added[i]
+                found = False
+                j = 0
+                while not found and j < len(F):
+                    elem2 = F[j]
+
+                    if i != j and elem.is_equal(elem2):
+                        found = True
+
+                    j += 1
+
+                if not found:
+                    F.append(elem)
+
         if i % 5 == 0:
             print('Preprocessed ' + str(i + 1) + ' days.')
         i += 1
+
     return F
 
 
