@@ -68,7 +68,8 @@ def train_fqi(n_epochs, batch_size, samples, iterations, trajectories_path, mode
 
     print('There are ' + str(len(train_day_trajectories)) + ' training days.')
 
-    models_directory = models_directory + 'fqi/unique/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
+    #models_directory = models_directory + 'fqi/unique/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
+    models_directory = models_directory + 'fqi/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
     if not os.path.exists(models_directory):
         os.makedirs(models_directory)
 

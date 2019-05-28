@@ -172,7 +172,8 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
     else:
         network = 'PV'
 
-    models_directory = models_directory + 'fqi_reverse/unique/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
+    #models_directory = models_directory + 'fqi_reverse/unique/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
+    models_directory = models_directory + 'fqi_reverse/' + network + '/samples_' + str(samples) + '_n_epochs_' + str(n_epochs) + '_batch_size_' + str(batch_size) + '/'
 
     # Logfile to save the info about the testing. The 'w' filemode re-writes the file every time.
     # If you prefer to keep all the run results on the log file, remove filemode='w'
