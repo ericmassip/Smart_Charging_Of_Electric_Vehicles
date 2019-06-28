@@ -59,6 +59,8 @@ def get_BAU_cost(i_day, sessions_of_the_day, pv_per_timeslot_dict):
     BAU_cost_day = 0
     day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
     BAU_default_action = np.ones(Smax)
+    non_pv_power_consumed = 0
+    total_power_consumed = 0
 
     Xs = np.zeros((Smax, Smax))
 
@@ -68,10 +70,15 @@ def get_BAU_cost(i_day, sessions_of_the_day, pv_per_timeslot_dict):
         resulting_Xs = get_resulting_Xs_matrix(Xs, BAU_default_action)
 
         pv_energy_generated = pv_per_timeslot_dict[i_day][timeslot]
-        BAU_cost_day += get_cost(Xs, resulting_Xs, BAU_default_action, pv_energy_generated)
+        cost, power_consumed = get_cost(Xs, resulting_Xs, BAU_default_action, pv_energy_generated)
+        BAU_cost_day += cost
+        non_pv_power_consumed += 0 if (power_consumed - pv_energy_generated) < 0 else (power_consumed - pv_energy_generated)
+        total_power_consumed += power_consumed
         Xs = resulting_Xs.copy()
 
-    return BAU_cost_day
+    percentage_pv_power_consumed = (total_power_consumed - non_pv_power_consumed) / total_power_consumed
+
+    return BAU_cost_day, percentage_pv_power_consumed
 
 
 def get_action_with_minimum_q_value(timeslot, Xs, pv_energy_generated, approximated_functions, network):
@@ -103,6 +110,8 @@ def get_policy_cost(i_day, sessions_of_the_day, pv_per_timeslot_dict, approximat
     day_transactions = get_dict_of_day_transactions(sessions_of_the_day)
 
     Xs = np.zeros((Smax, Smax))
+    non_pv_power_consumed = 0
+    total_power_consumed = 0
 
     for timeslot in range(1, Smax + 1):
         Xs = add_cars_starting_at_this_timeslot(timeslot, Xs, day_transactions)
@@ -111,60 +120,17 @@ def get_policy_cost(i_day, sessions_of_the_day, pv_per_timeslot_dict, approximat
         policy_action = get_action_with_minimum_q_value(timeslot, Xs, pv_energy_generated, approximated_functions, network)
         resulting_Xs = get_resulting_Xs_matrix(Xs, policy_action)
 
-        policy_cost_day += get_cost(Xs, resulting_Xs, policy_action, pv_energy_generated)
+        cost, power_consumed = get_cost(Xs, resulting_Xs, policy_action, pv_energy_generated)
+        policy_cost_day += cost
+        non_pv_power_consumed += 0 if (power_consumed - pv_energy_generated) < 0 else (power_consumed - pv_energy_generated)
+        total_power_consumed += power_consumed
         Xs = resulting_Xs.copy()
 
-    return policy_cost_day
+    percentage_pv_power_consumed = (total_power_consumed - non_pv_power_consumed) / total_power_consumed
+
+    return policy_cost_day, percentage_pv_power_consumed
 
 
-@click.command()
-@click.option(
-    '--n_epochs',
-    type=click.INT,
-    required=True,
-    help='Number of epochs used to train the model being evaluated.'
-)
-@click.option(
-    '--batch_size',
-    type=click.INT,
-    required=True,
-    help='Batch size used to train the model being evaluated.'
-)
-@click.option(
-    '--samples',
-    type=click.STRING,
-    required=True,
-    help="This parameter refers to the 'top sampling trajectories' used in the extraction of the trajectories."
-)
-@click.option(
-    '--sessions',
-    type=click.STRING,
-    required=True,
-    help='Sessions file with the historical transactions to be used.'
-)
-@click.option(
-    '--tpc_file',
-    type=click.STRING,
-    required=True,
-    help='Path to the file where the total power consumption is saved.'
-)
-@click.option(
-    '--trajectories_path',
-    type=click.STRING,
-    required=True,
-    help='Path to the file where the trajectories are saved.'
-)
-@click.option(
-    '--models_directory',
-    type=click.STRING,
-    required=True,
-    help='Path to the directory where the models are saved.'
-)
-@click.option(
-    '--baseline/--pv',
-    required=True,
-    help='Whether you want to train the Baseline network without PV data as input or the PV network with PV data as input.'
-)
 def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_path, models_directory, baseline):
 
     if baseline:
@@ -234,12 +200,17 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
     times_policy_better = 0
     draws = 0
 
+    BAU_percentage_PV_power_consumed = 0
+    policy_percentage_PV_power_consumed = 0
+
     for i_day in range(len(test_day_trajectories)):
+    #for i_day in [13, 12, 3]:
+    #for i_day in [13]:
         day_sessions = test_day_sessions[i_day]
         day_trajectories = test_day_trajectories[i_day]
 
-        BAU_cost_day = get_BAU_cost(i_day, day_sessions, pv_per_timeslot_dict)
-        policy_cost_day = get_policy_cost(i_day, day_sessions, pv_per_timeslot_dict, approximated_functions, network)
+        BAU_cost_day, BAU_day_percentage_PV_power_consumed = get_BAU_cost(i_day, day_sessions, pv_per_timeslot_dict)
+        policy_cost_day, policy_day_percentage_PV_power_consumed = get_policy_cost(i_day, day_sessions, pv_per_timeslot_dict, approximated_functions, network)
         optimal_cost_day = get_optimal_cost(day_trajectories)
 
         if BAU_cost_day > policy_cost_day:
@@ -248,6 +219,9 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
             times_BAU_better += 1
         else:
             draws += 1
+
+        BAU_percentage_PV_power_consumed += BAU_day_percentage_PV_power_consumed
+        policy_percentage_PV_power_consumed += policy_day_percentage_PV_power_consumed
 
         if BAU_cost_day < 0 or policy_cost_day < 0 or optimal_cost_day < 0:
             logging.warning('A cost day smaller than 0 was found in the test trajectory ' + str(i_day) + '.')
@@ -258,6 +232,10 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
                      ' - Policy  cost = ' + str(policy_cost_day))
         logging.info('Test trajectory ' + str(i_day) +
                      ' - Optimal cost = ' + str(optimal_cost_day))
+        logging.info('Test trajectory ' + str(i_day) +
+                     ' - BAU    % PV power consumed = ' + str(round(BAU_day_percentage_PV_power_consumed, 1) * 100) + ' %')
+        logging.info('Test trajectory ' + str(i_day) +
+                     ' - Policy % PV power consumed = ' + str(round(policy_day_percentage_PV_power_consumed, 1) * 100) + ' %')
         logging.info('')
 
         relative_cost_BAU += BAU_cost_day / optimal_cost_day
@@ -265,6 +243,9 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
 
     relative_error_given_BAU = relative_cost_BAU / len(test_day_trajectories)
     relative_error_given_policy = relative_cost_policy / len(test_day_trajectories)
+
+    BAU_percentage_PV_power_consumed = BAU_percentage_PV_power_consumed / len(test_day_trajectories) * 100
+    policy_percentage_PV_power_consumed= policy_percentage_PV_power_consumed / len(test_day_trajectories) * 100
 
     logging.info('Times BAU better = ' + str(times_BAU_better))
     logging.info('Times Policy better = ' + str(times_policy_better))
@@ -274,13 +255,21 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
     logging.info('Relative error BAU = ' + str(round(relative_error_given_BAU, 2)))
     logging.info('Relative error given policy = ' + str(round(relative_error_given_policy, 2)))
 
+    logging.info('')
+
+    logging.info('BAU    % PV power consumed = ' + str(round(BAU_percentage_PV_power_consumed, 1)))
+    logging.info('Policy % PV power consumed = ' + str(round(policy_percentage_PV_power_consumed, 1)))
+
     print('')
     print('Times BAU better = ' + str(times_BAU_better))
     print('Times Policy better = ' + str(times_policy_better))
     print('')
-    print('Relative error BAU = ' + str(round(relative_error_given_BAU, 2)))
-    print('Relative error given policy = ' + str(round(relative_error_given_policy, 2)))
+    print('Relative error BAU = ' + str(round(relative_error_given_BAU, 2)) + ' %')
+    print('Relative error given policy = ' + str(round(relative_error_given_policy, 2)) + ' %')
+    print('')
+    print('BAU    % PV power consumed = ' + str(round(BAU_percentage_PV_power_consumed, 1)) + ' %')
+    print('Policy % PV power consumed = ' + str(round(policy_percentage_PV_power_consumed, 1)) + ' %')
 
 
 if __name__ == '__main__':
-    evaluate()
+    evaluate(25, 64, 10000, '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-06.csv', '~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv', '../../../datasets/Trajectories/', '../../../models/', False)

@@ -8,7 +8,7 @@ end_hour = 22
 Hmax = end_hour - start_hour
 deltaTslot = 2  # Easier if it's integers to represent hours
 Smax = int(Hmax/deltaTslot)
-Nmax = 6
+Nmax = 8
 charging_rate = 7.5
 charging_energy_necessary_per_timeslot = charging_rate * deltaTslot
 M = 2 * Nmax * charging_energy_necessary_per_timeslot  # This value represents the energy needed if all cars are being charged times 2 for penalization
@@ -122,9 +122,9 @@ def get_possible_actions(Xs):
 
 # Returns the cost of the given state-action
 def get_cost(Xs, resulting_Xs, action, pv_energy_generated):
-    cost_demand = get_cost_demand(Xs, action, pv_energy_generated)
+    cost_demand, power_consumed = get_cost_demand(Xs, action, pv_energy_generated)
     cost_penalty = get_cost_penalty(Xs, resulting_Xs, action)
-    return cost_demand + cost_penalty
+    return cost_demand + cost_penalty, power_consumed
 
 
 # Returns the cost of taking the given action on state Xs, also taking into account the PV energy generated
@@ -139,7 +139,7 @@ def get_cost_demand(Xs, action, pv_energy_generated):
 
     cost_demand = 1 if (cost_of_cars_action - pv_energy_generated) < 0 else (cost_of_cars_action - pv_energy_generated)
 
-    return cost_demand
+    return cost_demand, cost_of_cars_action
 
 
 # Returns the penalty cost of having cars in the lower diagonals, which means that those cars will not be fully charged
