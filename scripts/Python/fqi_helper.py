@@ -128,7 +128,7 @@ def train_function_approximator(x, y, n_epochs, batch_size, input_vector_size):
     model.add(Dense(1, activation='linear'))
 
     model.compile(optimizer='rmsprop', loss=tf.losses.huber_loss)
-
-    model.fit(x, y, epochs=n_epochs, batch_size=batch_size, validation_split=0.2, verbose=2)
+    
+    model.fit(x, y[:,0], epochs=n_epochs, batch_size=batch_size, validation_split=0.2, verbose=2)
 
     return model

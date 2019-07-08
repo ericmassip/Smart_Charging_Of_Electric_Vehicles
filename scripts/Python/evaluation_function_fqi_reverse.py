@@ -101,6 +101,8 @@ def predict(timeslot, pv_energy_generated, Xs, action, previous_Q_approximated_f
 
     elif network == 'PV':
         input_value = np.array([timeslot, pv_energy_generated, *Xs.flatten(), *action])
+        input_value = input_value[:-1]
+#         print('length:', input_value.shape)
         return previous_Q_approximated_function.predict(np.reshape(input_value, (1, len(input_value))))
 
 
@@ -125,8 +127,13 @@ def get_policy_cost(i_day, sessions_of_the_day, pv_per_timeslot_dict, approximat
         non_pv_power_consumed += 0 if (power_consumed - pv_energy_generated) < 0 else (power_consumed - pv_energy_generated)
         total_power_consumed += power_consumed
         Xs = resulting_Xs.copy()
-
-    percentage_pv_power_consumed = (total_power_consumed - non_pv_power_consumed) / total_power_consumed
+    
+    print(total_power_consumed, non_pv_power_consumed, total_power_consumed)
+    
+    if total_power_consumed == 0:
+        percentage_pv_power_consumed = 0
+    else:
+        percentage_pv_power_consumed = (total_power_consumed - non_pv_power_consumed) / total_power_consumed
 
     return policy_cost_day, percentage_pv_power_consumed
 
@@ -272,4 +279,4 @@ def evaluate(n_epochs, batch_size, samples, sessions, tpc_file, trajectories_pat
 
 
 if __name__ == '__main__':
-    evaluate(25, 64, 10000, '~/Projects/MAI/Thesis/datasets/Transactions/historical_transactions_2019-05-06.csv', '~/Projects/MAI/Thesis/datasets/PV/total_power_consumption_2019-05-05.csv', '../../../datasets/Trajectories/', '../../../models/', False)
+    evaluate(25, 64, 5000, '../../datasets/transactions/historical_transactions_2019-07-03.csv', '../../datasets/PV/total_power_consumption_2019-07-03.csv', '../../datasets/trajectories/', '../../models/', False)

@@ -125,8 +125,9 @@ def get_unique_state_action_tuples(state_action_tuples):
 
 
 def get_accumulated_cost(trajectory):
+    
     return functools.reduce(lambda acc, state_action_tuple:
-                            acc + state_action_tuple.cost, trajectory, 0)
+                            acc + state_action_tuple.cost[0], trajectory, 0)
 
 
 #json_to_be_beautified = json.loads(open('../../../datasets/Trajectories/all/trajectories_2018-08-18.json').read())
