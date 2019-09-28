@@ -1,6 +1,6 @@
 # Smart Charging Of_Electric Vehicles
 
-This repository includes the code my Thesis for my Master in Artificial Intelligence of the KU Leuven. 
+This repository includes the code my Thesis for the Master in Artificial Intelligence of the KU Leuven. 
 
 The goal of this project was to generate charging schedules for electric vehicles (EV) that maximized photovoltaic (PV) self-consumption. The data about charging schedules was provided by EnergyVille, a research institute in Belgium, and made available through and Azure database on the cloud. Also, the weather forecasting data was provided by EnergyVille through an API. 
 
