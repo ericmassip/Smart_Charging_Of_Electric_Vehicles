@@ -1,4 +1,4 @@
-# Smart Charging Of_Electric Vehicles
+# Smart Charging Of Electric Vehicles
 
 This repository includes the code my Thesis for the Master in Artificial Intelligence of the KU Leuven. 
 
