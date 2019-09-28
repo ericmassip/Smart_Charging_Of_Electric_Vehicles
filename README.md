@@ -1,8 +1,14 @@
 # Smart Charging Of_Electric Vehicles
 
-Eric Massip - Master's in Artificial Intelligence student of the KU Leuven
+This repository includes the code my Thesis for my Master in Artificial Intelligence of the KU Leuven. 
+
+The goal of this project was to generate charging schedules for electric vehicles (EV) that maximized photovoltaic (PV) self-consumption. The data about charging schedules was provided by EnergyVille, a research institute in Belgium, and made available through and Azure database on the cloud. Also, the weather forecasting data was provided by EnergyVille through an API. 
+
+Data preprocessing was done with Pandas, data visualization with Matplotlib and Seaborn, matrix manipulation with Numpy, unit testing with the Unittest python library and neural network training and testing with Keras.
 
 
+
+# Documentation
 
 ## Azure and Smarthor API credentials
 
