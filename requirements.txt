@@ -42,7 +42,7 @@ mistune==0.8.4
 mock==2.0.0
 msrest==0.6.6
 msrestazure==0.6.0
-notebook==5.7.8
+notebook==6.4.10
 numpy==1.16.3
 oauthlib==3.0.1
 pandas==0.24.2
